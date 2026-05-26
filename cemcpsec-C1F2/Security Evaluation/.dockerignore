@@ -1,0 +1,129 @@
+# ============================================
+# Docker Ignore File
+# ============================================
+# Excludes files from Docker build context
+# Reduces image size and build time
+
+# ============================================
+# Git & Version Control
+# ============================================
+.git/
+.gitignore
+.gitattributes
+.github/
+
+# ============================================
+# Python
+# ============================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+.pytest_cache/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pytype/
+.coverage
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+.hypothesis/
+
+# ============================================
+# Virtual Environments
+# ============================================
+venv/
+env/
+ENV/
+.venv
+.virtualenv
+pipenv/
+
+# ============================================
+# IDEs & Editors
+# ============================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+
+# ============================================
+# Environment & Secrets
+# ============================================
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+secrets/
+
+# ============================================
+# Logs & Data (exclude from image)
+# ============================================
+logs/
+*.log
+log/
+data/*.json
+data/*.csv
+
+# ============================================
+# Docker Files
+# ============================================
+docker/
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# ============================================
+# Documentation
+# ============================================
+README.md
+CHANGELOG.md
+LICENSE
+docs/
+*.md
+
+# ============================================
+# Testing
+# ============================================
+tests/
+test/
+*.test.js
+*.spec.js
+__tests__/
+
+# ============================================
+# CI/CD
+# ============================================
+.circleci/
+.travis.yml
+.gitlab-ci.yml
+Jenkinsfile
+
+# ============================================
+# OS Files
+# ============================================
+Thumbs.db
+desktop.ini
+
+# ============================================
+# Temporary Files
+# ============================================
+tmp/
+temp/
+*.tmp
+*.bak
+*.backup
+

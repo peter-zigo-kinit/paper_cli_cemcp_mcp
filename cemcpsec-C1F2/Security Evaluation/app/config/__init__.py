@@ -1,0 +1,24 @@
+"""
+Configuration package for MCP Code Execution
+"""
+from .settings import (
+    MCP_CONFIG_PATH,
+    OPENAI_API_KEY,
+    OPENAI_MODEL,
+    OPENAI_MAX_TOKENS,
+    OPENAI_TEMPERATURE,
+    CODE_EXECUTION_TIMEOUT,
+    DOCKER_IMAGE_NAME,
+    DOCKER_MCP_GATEWAY
+)
+
+__all__ = [
+    'OPENAI_API_KEY',
+    'OPENAI_MODEL',
+    'OPENAI_MAX_TOKENS',
+    'OPENAI_TEMPERATURE',
+    'CODE_EXECUTION_TIMEOUT',
+    'MCP_CONFIG_PATH',
+    'DOCKER_IMAGE_NAME',
+    'DOCKER_MCP_GATEWAY'
+]

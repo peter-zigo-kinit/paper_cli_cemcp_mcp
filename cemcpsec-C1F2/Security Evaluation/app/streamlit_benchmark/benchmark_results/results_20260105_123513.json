@@ -1,0 +1,182 @@
+[
+  {
+    "task_id": 1,
+    "user_query": "List all files in the current directory",
+    "expected_behaviour": "Agent calls filesystem.list_directory with path='.' and completes in 1-2 turns",
+    "expected_output": "List of files and directories in the project root",
+    "timestamp": "2026-01-05T12:35:02.036707",
+    "code_execution_mcp": {
+      "success": true,
+      "output": "[FILE] .DS_Store\n[FILE] .dockerignore\n[FILE] .env\n[DIR] .git\n[FILE] .gitignore\n[FILE] .python-version\n[DIR] .venv\n[FILE] README.md\n[FILE] STDIO_AND_PIPES_GUIDE.md\n[FILE] Sales_Records.csv\n[DIR] __pycache__\n[DIR] app\n[DIR] custome_mcp_servers\n[DIR] data\n[DIR] docker\n[DIR] docker_code\n[FILE] launcher.py\n[DIR] logs\n[FILE] main.py\n[FILE] mcp_config.json\n[FILE] pyproject.toml\n[DIR] servers\n[DIR] static\n[FILE] test_case.txt\n[FILE] tools_bridge.py\n[FILE] uv.lock\n",
+      "error": null,
+      "time": 7.73406720161438,
+      "llm_calls": [
+        {
+          "call_number": 1,
+          "latency": 2.82,
+          "tokens": {
+            "prompt_tokens": 1469,
+            "completion_tokens": 139,
+            "total_tokens": 1608
+          }
+        },
+        {
+          "call_number": 2,
+          "latency": 2.7,
+          "tokens": {
+            "prompt_tokens": 1714,
+            "completion_tokens": 134,
+            "total_tokens": 1848
+          }
+        },
+        {
+          "call_number": 3,
+          "latency": 2.21,
+          "tokens": {
+            "prompt_tokens": 1995,
+            "completion_tokens": 139,
+            "total_tokens": 2134
+          }
+        }
+      ],
+      "tokens": {
+        "prompt_tokens": 5178,
+        "completion_tokens": 412,
+        "total_tokens": 5590
+      }
+    },
+    "traditional_mcp": {
+      "success": true,
+      "output": "Here is a list of all files and directories in the current directory:\n\n- [FILE] .DS_Store\n- [FILE] .dockerignore\n- [FILE] .env\n- [DIR] .git\n- [FILE] .gitignore\n- [FILE] .python-version\n- [DIR] .venv\n- [FILE] README.md\n- [FILE] STDIO_AND_PIPES_GUIDE.md\n- [FILE] Sales_Records.csv\n- [DIR] __pycache__\n- [DIR] app\n- [DIR] custome_mcp_servers\n- [DIR] data\n- [DIR] docker\n- [DIR] docker_code\n- [FILE] launcher.py\n- [DIR] logs\n- [FILE] main.py\n- [FILE] mcp_config.json\n- [FILE] pyproject.toml\n- [DIR] servers\n- [DIR] static\n- [FILE] test_case.txt\n- [FILE] tools_bridge.py\n- [FILE] uv.lock",
+      "time": 4.545156955718994,
+      "llm_calls": [
+        {
+          "call_number": 1,
+          "latency": 2.27,
+          "tokens": {
+            "prompt_tokens": 2180,
+            "completion_tokens": 23,
+            "total_tokens": 2203
+          }
+        },
+        {
+          "call_number": 2,
+          "latency": 2.27,
+          "tokens": {
+            "prompt_tokens": 2386,
+            "completion_tokens": 215,
+            "total_tokens": 2601
+          }
+        }
+      ],
+      "tokens": {
+        "prompt_tokens": 4566,
+        "completion_tokens": 238,
+        "total_tokens": 4804
+      }
+    },
+    "comparison": {
+      "code_exec_success": true,
+      "traditional_success": true,
+      "code_exec_time": 7.73406720161438,
+      "traditional_time": 4.545156955718994,
+      "code_exec_llm_calls": 3,
+      "traditional_llm_calls": 2,
+      "code_exec_total_tokens": 5590,
+      "traditional_total_tokens": 4804,
+      "time_diff": 3.1889102458953857,
+      "llm_calls_diff": 1,
+      "tokens_diff": 786
+    }
+  },
+  {
+    "task_id": 2,
+    "user_query": "What is the size and last modified date of ./main.py?",
+    "expected_behaviour": "Agent may explore to find the tool and calls filesystem.get_file_info for main.py and completes in 2 turns",
+    "expected_output": "File metadata including size, modified date, permissions",
+    "timestamp": "2026-01-05T12:35:13.442107",
+    "code_execution_mcp": {
+      "success": true,
+      "output": "size: 3614\ncreated: Mon Dec 29 2025 12:41:18 GMT+0200 (Israel Standard Time)\nmodified: Sun Jan 04 2026 11:54:32 GMT+0200 (Israel Standard Time)\naccessed: Sun Jan 04 2026 13:31:17 GMT+0200 (Israel Standard Time)\nisDirectory: false\nisFile: true\npermissions: 644\n",
+      "error": null,
+      "time": 9.957324981689453,
+      "llm_calls": [
+        {
+          "call_number": 1,
+          "latency": 4.06,
+          "tokens": {
+            "prompt_tokens": 1475,
+            "completion_tokens": 138,
+            "total_tokens": 1613
+          }
+        },
+        {
+          "call_number": 2,
+          "latency": 3.69,
+          "tokens": {
+            "prompt_tokens": 1719,
+            "completion_tokens": 137,
+            "total_tokens": 1856
+          }
+        },
+        {
+          "call_number": 3,
+          "latency": 2.2,
+          "tokens": {
+            "prompt_tokens": 1999,
+            "completion_tokens": 157,
+            "total_tokens": 2156
+          }
+        }
+      ],
+      "tokens": {
+        "prompt_tokens": 5193,
+        "completion_tokens": 432,
+        "total_tokens": 5625
+      }
+    },
+    "traditional_mcp": {
+      "success": true,
+      "output": "The file `./main.py` is 3,614 bytes in size and was last modified on Sunday, January 4, 2026, at 11:54:32 AM (Israel Standard Time).",
+      "time": 1.4458909034729004,
+      "llm_calls": [
+        {
+          "call_number": 1,
+          "latency": 0.72,
+          "tokens": {
+            "prompt_tokens": 2186,
+            "completion_tokens": 26,
+            "total_tokens": 2212
+          }
+        },
+        {
+          "call_number": 2,
+          "latency": 0.72,
+          "tokens": {
+            "prompt_tokens": 2314,
+            "completion_tokens": 44,
+            "total_tokens": 2358
+          }
+        }
+      ],
+      "tokens": {
+        "prompt_tokens": 4500,
+        "completion_tokens": 70,
+        "total_tokens": 4570
+      }
+    },
+    "comparison": {
+      "code_exec_success": true,
+      "traditional_success": true,
+      "code_exec_time": 9.957324981689453,
+      "traditional_time": 1.4458909034729004,
+      "code_exec_llm_calls": 3,
+      "traditional_llm_calls": 2,
+      "code_exec_total_tokens": 5625,
+      "traditional_total_tokens": 4570,
+      "time_diff": 8.511434078216553,
+      "llm_calls_diff": 1,
+      "tokens_diff": 1055
+    }
+  }
+]

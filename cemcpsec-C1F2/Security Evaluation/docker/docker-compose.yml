@@ -1,0 +1,166 @@
+# ============================================
+# MCP Benchmark Dashboard - Docker Compose
+# ============================================
+# This file orchestrates the application services
+# Useful for local development and testing before GCP deployment
+
+version: '3.8'
+
+services:
+  # ============================================
+  # Main Application Service
+  # ============================================
+  mcp-dashboard:
+    # Build configuration
+    build:
+      context: ..  # Build from parent directory (project root)
+      dockerfile: docker/dockerfile  # Path to Dockerfile
+      
+    # Container name for easy reference
+    container_name: mcp-benchmark-dashboard
+    
+    # Image name and tag
+    image: mcp-benchmark-dashboard:latest
+    
+    # Port mapping: host:container
+    # Access application at http://localhost:8000
+    ports:
+      - "8000:8000"
+    
+    # Environment file
+    # All environment variables are loaded from .env in project root
+    # This includes: OPENAI_API_KEY, OPENAI_MODEL, APP_PORT, etc.
+    env_file:
+      - ../.env
+    
+    # Docker-specific environment variables
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+    
+    # Volume mounts for development
+    # Allows live code updates without rebuilding container
+    volumes:
+      # Mount application code (for development hot-reload)
+      - ../app:/app/app:ro  # Read-only for safety
+      - ../static:/app/static:ro
+      - ../main.py:/app/main.py:ro
+      
+      # Data stays inside container (no mount needed for production)
+      # - ../data:/app/data
+      
+      # Logs stay inside container (no mount needed)
+      # Access with: docker-compose logs -f
+      # - ../logs:/app/logs
+      
+      # Mount configuration files
+      - ../mcp_config.json:/app/mcp_config.json:ro
+    
+    # Restart policy
+    # always: Restart container automatically on failure
+    restart: unless-stopped
+    
+    # Health check configuration
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    
+    # Resource limits (optional but recommended for GCP)
+    # Adjust based on your GCP instance size
+    deploy:
+      resources:
+        limits:
+          cpus: '2'      # Maximum 2 CPU cores
+          memory: 2G     # Maximum 2GB RAM
+        reservations:
+          cpus: '0.5'    # Minimum 0.5 CPU cores
+          memory: 512M   # Minimum 512MB RAM
+    
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"    # Maximum log file size
+        max-file: "3"      # Keep last 3 log files
+    
+    # Network configuration
+    networks:
+      - mcp-network
+
+# ============================================
+# Networks Configuration
+# ============================================
+networks:
+  mcp-network:
+    driver: bridge
+    name: mcp-benchmark-network
+
+# ============================================
+# Volumes Configuration (Optional)
+# ============================================
+# Named volumes for persistent data (alternative to bind mounts)
+volumes:
+  mcp-data:
+    name: mcp-benchmark-data
+  mcp-logs:
+    name: mcp-benchmark-logs
+
+# ============================================
+# Usage Instructions:
+# ============================================
+#
+# 1. SETUP:
+#    Create .env file in project root with required variables:
+#    cp .env.example .env
+#    # Edit .env and add your OPENAI_API_KEY
+#
+# 2. BUILD:
+#    docker-compose -f docker/docker-compose.yml build
+#
+# 3. START:
+#    docker-compose -f docker/docker-compose.yml up -d
+#
+# 4. VIEW LOGS:
+#    docker-compose -f docker/docker-compose.yml logs -f
+#
+# 5. STOP:
+#    docker-compose -f docker/docker-compose.yml down
+#
+# 6. REBUILD (after code changes):
+#    docker-compose -f docker/docker-compose.yml up -d --build
+#
+# 7. ACCESS APPLICATION:
+#    Open browser: http://localhost:8000
+#    API Documentation: http://localhost:8000/docs
+#
+# ============================================
+# GCP Deployment Notes:
+# ============================================
+#
+# 1. CLOUD RUN:
+#    - Cloud Run doesn't use docker-compose
+#    - Use Dockerfile only
+#    - Deploy with: gcloud run deploy
+#
+# 2. GOOGLE KUBERNETES ENGINE (GKE):
+#    - Convert compose to k8s manifests:
+#      kompose convert -f docker/docker-compose.yml
+#    - Or manually create k8s deployment.yaml
+#
+# 3. COMPUTE ENGINE:
+#    - Install Docker & Docker Compose on VM
+#    - Use this docker-compose.yml directly
+#    - Set up firewall rules for port 8000
+#
+# 4. ARTIFACT REGISTRY:
+#    - Tag image for Artifact Registry:
+#      docker tag mcp-benchmark-dashboard \
+#        us-central1-docker.pkg.dev/PROJECT_ID/REPO_NAME/mcp-benchmark-dashboard
+#    - Push:
+#      docker push us-central1-docker.pkg.dev/PROJECT_ID/REPO_NAME/mcp-benchmark-dashboard
+#
+# ============================================
+

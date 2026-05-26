@@ -1,0 +1,179 @@
+================================================================================
+MCP CODE EXECUTION TEST CASES
+================================================================================
+Test these queries to validate the persistent Docker executor with MCP tools.
+Each test is designed to complete within 3 LLM turns.
+
+Copy the query and send it to: POST http://localhost:8000/code-execution-mcp
+Body: {"query": "<your query here>"}
+
+================================================================================
+TEST 1: SIMPLE FILE LISTING (1-2 turns)
+================================================================================
+Query: "List all files in the current directory"
+
+Expected behavior:
+- Turn 1: Agent calls filesystem.list_directory with path='.'
+- Should complete in 1-2 turns
+- Output: List of files and directories in the project root
+
+Test Result: [ PASS / FAIL ]
+Output: _________________________________________________________________
+________________________________________________________________________
+
+
+================================================================================
+TEST 2: FILE INFO LOOKUP (2 turns)
+================================================================================
+Query: "What is the size and last modified date of main.py?"
+
+Expected behavior:
+- Turn 1: Agent may explore to find the tool
+- Turn 2: Agent calls filesystem.get_file_info for main.py
+- Output: File metadata including size, modified date, permissions
+
+Test Result: [ PASS / FAIL ]
+Output: _________________________________________________________________
+________________________________________________________________________
+
+
+================================================================================
+TEST 3: READ SPECIFIC FILE (2 turns)
+================================================================================
+Query: "Show me the contents of the README.md file"
+
+Expected behavior:
+- Turn 1-2: Agent calls filesystem.read_text_file with path to README.md
+- Output: Complete contents of README.md file
+
+Test Result: [ PASS / FAIL ]
+Output: _________________________________________________________________
+________________________________________________________________________
+
+
+================================================================================
+TEST 4: SEARCH FOR FILES (2-3 turns)
+================================================================================
+Query: "Find all Python files in the app directory"
+
+Expected behavior:
+- Turn 1: Agent discovers search_files tool
+- Turn 2: Agent calls filesystem.search_files with pattern='**/*.py', path='./app'
+- Output: List of all .py files in app directory
+
+Test Result: [ PASS / FAIL ]
+Output: _________________________________________________________________
+________________________________________________________________________
+
+
+================================================================================
+TEST 5: DIRECTORY STRUCTURE (2 turns)
+================================================================================
+Query: "Show me the directory structure of the docker_code folder"
+
+Expected behavior:
+- Turn 1-2: Agent calls filesystem.directory_tree with path='./docker_code'
+- Output: JSON tree structure of docker_code directory
+
+Test Result: [ PASS / FAIL ]
+Output: _________________________________________________________________
+________________________________________________________________________
+
+
+================================================================================
+TEST 6: MULTI-STEP FILE ANALYSIS (3 turns)
+================================================================================
+Query: "List all files in the servers directory and tell me how many markdown files there are"
+
+Expected behavior:
+- Turn 1: List directory to see structure
+- Turn 2: Search for *.md files or count from listing
+- Turn 3: Return count with summary
+- Output: Number of markdown files found
+
+Test Result: [ PASS / FAIL ]
+Output: _________________________________________________________________
+________________________________________________________________________
+
+
+================================================================================
+TEST 7: FILE COMPARISON (3 turns)
+================================================================================
+Query: "Compare the size of main.py and app.log files"
+
+Expected behavior:
+- Turn 1: Get file info for main.py
+- Turn 2: Get file info for app.log
+- Turn 3: Compare and report sizes
+- Output: Size comparison of both files
+
+Test Result: [ PASS / FAIL ]
+Output: _________________________________________________________________
+________________________________________________________________________
+
+
+================================================================================
+TEST 8: NESTED DIRECTORY EXPLORATION (2-3 turns)
+================================================================================
+Query: "How many files are in the app/core directory?"
+
+Expected behavior:
+- Turn 1-2: List directory app/core
+- Turn 3: Count files and report
+- Output: Count of files in app/core
+
+Test Result: [ PASS / FAIL ]
+Output: _________________________________________________________________
+________________________________________________________________________
+
+
+================================================================================
+TEST 9: FIRST N LINES OF FILE (2 turns)
+================================================================================
+Query: "Show me the first 10 lines of the logs/app.log file"
+
+Expected behavior:
+- Turn 1-2: Call filesystem.read_text_file with head=10
+- Output: First 10 lines of app.log
+
+Test Result: [ PASS / FAIL ]
+Output: _________________________________________________________________
+________________________________________________________________________
+
+
+================================================================================
+TEST 10: COMPLEX SEARCH PATTERN (2-3 turns)
+================================================================================
+Query: "Find all JSON configuration files in the project"
+
+Expected behavior:
+- Turn 1-2: Call filesystem.search_files with pattern='**/*.json'
+- Output: List of all .json files found
+
+Test Result: [ PASS / FAIL ]
+Output: _________________________________________________________________
+________________________________________________________________________
+
+
+================================================================================
+TEST 11: GREETING TOOLS (1-2 turns) - Custom MCP Server
+================================================================================
+Query: "Give me a morning greeting"
+
+Expected behavior:
+- Turn 1-2: Call mal_mcp_server.morning_greet
+- Output: Morning greeting message
+
+Test Result: [ PASS / FAIL ]
+Output: _________________________________________________________________
+________________________________________________________________________
+
+
+================================================================================
+TEST 12: ERROR HANDLING (2 turns)
+================================================================================
+Query: "Read the file nonexistent_file.txt"
+
+Expected behavior:
+- Turn 1-2: Attempt to read file, get error
+- Output

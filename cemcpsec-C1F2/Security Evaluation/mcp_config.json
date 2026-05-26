@@ -1,0 +1,33 @@
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "."
+      ],
+      "description": "Filesystem operations for project directory with real MCP server"
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ]
+    },
+    "db_server": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--env-file",
+        ".env",
+        "fastmcp",
+        "run",
+        "--no-banner",
+        "costume_mcp_servers/main.py:mcp"
+      ]
+    }
+  }
+}
+

@@ -1,0 +1,29 @@
+# filesystem.read_multiple_files
+
+Read the contents of multiple files simultaneously. This is more efficient than reading files one by one when you need to analyze or compare multiple files. Each file's content is returned with its path as a reference. Failed reads for individual files won't stop the entire operation. Only works within allowed directories.
+
+## Input Schema
+```json
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "paths": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Array of file paths to read. Each path must be a string pointing to a valid file within allowed directories."
+    }
+  },
+  "required": [
+    "paths"
+  ]
+}
+```
+
+## Example Usage
+```python
+mcp_call_http(name="filesystem.read_multiple_files", args={"paths": []})
+```

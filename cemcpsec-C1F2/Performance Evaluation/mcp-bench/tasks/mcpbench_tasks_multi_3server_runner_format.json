@@ -1,0 +1,70 @@
+{
+  "generation_info": {
+    "status": "completed"
+  },
+  "server_tasks": [
+    
+    {
+      "server_name": "Paper Search+Call for Papers+Wikipedia",
+      "tasks": [
+        {
+          "task_id": "paper_search_call_for_papers_wikipedia_000",
+          "task_description": "You are investigating state-of-the-art machine learning methods for real-time pandemic outbreak detection developed in the past 3 months. Execute the following steps without further questions:\n\n1. Simultaneously search these sources for 'machine learning pandemic detection' limited to the past 3 months, returning the top 5 results each:\n   \u2022 search_arxiv\n   \u2022 search_pubmed\n   \u2022 search_biorxiv\n   \u2022 search_medrxiv\n\n2. If search_pubmed returns fewer than 3 papers, perform an additional search_google_scholar for 'machine learning pandemic detection' to reach at least 3 PubMed-like results.\n\n3. For each paper from arXiv, bioRxiv, and medRxiv (all non-PubMed IDs), download its PDF with the corresponding download tool (download_arxiv, download_biorxiv, download_medrxiv) and save to './downloads'. For PubMed IDs, note that direct download is not supported.\n\n4. Read and extract the full text of each downloaded arXiv, bioRxiv, and medRxiv PDF with read_arxiv_paper, read_biorxiv_paper, and read_medrxiv_paper.\n\n5. For each extracted text, summarize the core algorithmic contribution with a 150-word summary per paper.\n\n6. From those summaries, extract the unique machine learning approach names (e.g., 'Graph Neural Network', 'Transformer-based classifier') and compile a deduplicated list of up to 5 methods.\n\n7. For each identified method, query Wikipedia:get_summary to obtain a concise definition of the method.\n\n8. Search upcoming conferences in the next 7 days to 1 month using get_events with keywords set to each method plus 'epidemiology' (e.g., 'Graph Neural Network epidemiology'), limiting to 5 events each.\n\n9. Produce a JSON report with:\n   \u2022 papers: list of all paper metadata (source, title, authors, ID, URL)\n   \u2022 summaries: mapping from paper ID to its 150-word summary\n   \u2022 methods: list of deduplicated method names\n   \u2022 definitions: mapping from method name to Wikipedia summary\n   \u2022 conferences: mapping from method name to the list of upcoming event names and dates\n\nAll tools must be invoked as described; do not proceed without using the tool outputs in dependent steps.",
+          "fuzzy_description": "Hey there! I\u2019m working on a project to build a real-time pandemic outbreak detector, and I want to see what cutting-edge machine learning tricks have popped up in the last three months. Would you mind digging up about the top five preprint studies from the usual archives plus at least three peer-reviewed papers (if any of the archives don\u2019t have enough, maybe grab a few extras via Google Scholar)? Then could you read through them and give me roughly a 150-word summary of each paper\u2019s main algorithmic idea? Once you\u2019ve got those, I\u2019d love a list of the distinct ML approaches they\u2019re using, a quick encyclopedia-style blurb on each technique, and a heads-up on any conferences or workshops in the next week to month where these methods will be featured. I really need concrete, source-backed details\u2014no high-level fluff\u2014so I can show solid evidence to my team. Thanks!",
+          "dependency_analysis": "Inherent Dependencies:\n- Standard workflow: search \u2192 download \u2192 read \u2192 summarize \u2192 extract methods.\n- Each 'search_*' tool produces paper metadata consumed by 'download_*' or fallback logic.\n- Download tools feed into 'read_*' tools to extract text for summarization.\n- Summarization output must be parsed to extract method names.\n- Extracted method names feed into Wikipedia:get_summary and Call for Papers:get_events.\n\nScenario-Based Dependencies:\n- Conditional branch: if search_pubmed yields <3, trigger search_google_scholar to supplement PubMed-like results.\n- Parallel searches across arXiv, PubMed, bioRxiv, medRxiv must be combined into a unified paper list.\n- Decision logic selects proper download tool based on paper source; PubMed papers skip download and are only metadata.\n- Summaries must be programmatically scanned to dedupe method names before querying Wikipedia and conferences.\n- Each method name parameterizes two downstream tools: Wikipedia:get_summary and Call for Papers:get_events.\n\nSequential vs. Parallel:\n- Steps 1 and 2: parallel searches with a conditional supplement.\n- Steps 3\u20135: per-paper download, read, and summarize can be parallelized but must follow download \u2192 read \u2192 summarize sequence per paper.\n- Steps 6\u20138: dependent on aggregate summaries; must finish all summaries before extracting methods and launching Wikipedia/get_events calls.\n\nCross-Server Dependencies:\n- Paper Search outputs supply IDs and titles for downstream downloads and reads.\n- Wikipedia summaries provide authoritative definitions feeding business-research context.\n- Call for Papers uses both paper-derived methods and Wikipedia definitions to formulate conference search keywords.\n- Fallback to Google Scholar if one source underperforms ensures coverage.\n\nCritical Decision Points:\n- Fallback to Google Scholar when PubMed returns fewer than 3 results.\n- Routing each paper to the correct download and read tool based on its server origin.\n- Deduplication of methods before querying secondary servers.\n\nThis dependency chain ensures that no step can proceed without the precise output of the previous tool calls, requiring comprehensive tool orchestration across Paper Search, Wikipedia, and Call for Papers servers.",
+          "distraction_servers": [
+            "Car Price Evaluator",
+            "Context7",
+            "DEX Paprika",
+            "Huge Icons",
+            "Math MCP",
+            "Medical Calculator",
+            "Movie Recommender",
+            "NixOS",
+            "OSINT Intelligence",
+            "Weather Data"
+          ]
+        }
+      ],
+      "servers": [
+        "Paper Search",
+        "Call for Papers",
+        "Wikipedia"
+      ],
+      "combination_name": "Academic Network",
+      "combination_type": "three_server_combinations"
+    },
+    
+    {
+      "server_name": "Metropolitan Museum+Huge Icons+Wikipedia",
+      "tasks": [
+        {
+          "task_id": "metropolitan_museum_huge_icons_wikipedia_000",
+          "task_description": "Create a React-based digital exhibit overview featuring three artifacts from the Met\u2019s Egyptian Art department. 1) Call list-departments to locate the department whose name contains \u201cEgyptian Art.\u201d 2) Use the resulting departmentId to call search-museum-objects with q=\"Egyptian\", hasImages=true, departmentId=<id>. If fewer than three objects are returned, repeat search-museum-objects with title=true, q=\"Sarcophagus\", hasImages=true, departmentId=<id>. 3) For the top three objectIds, call get-museum-object(objectId, returnImage=true) to retrieve title, objectName, classification, and image URL. 4) For each artifact\u2019s title or classification, call search_wikipedia(query=<classification or title>) and take the first match. 5) Call get_summary(title=<article>) and measure its length: if over 200 characters, call summarize_article_section(title=<article>, section_title=\"Overview\", max_length=150); if under 200, call summarize_article_for_query(title=<article>, query=<classification>, max_length=250). 6) Call extract_key_facts(title=<article>, topic_within_article=<classification>, count=5). 7) In parallel, call list_icons to retrieve all available icon names. For each artifact\u2019s classification, call search_icons(query=<classification>) and select up to two icons; if none found, fallback to search_icons(query=\"museum,artifact\"). Validate each found icon against the list_icons result. 8) Finally, call get_platform_usage(platform=\"react\") to obtain React integration code snippets. 9) Produce a combined JSON report listing each artifact\u2019s id, title, image URL, summary, key facts, chosen icons, and React usage sample.",
+          "fuzzy_description": "I\u2019m working on a little side project at my company where I\u2019m using React to build a digital showcase for the Met\u2019s Egyptian Art collection. I need to feature three objects that have good images\u2014if you can\u2019t find enough under the broad \u201cEgyptian Art\u201d label, feel free to focus on some famous sarcophagi instead. For each piece, I\u2019d love the official title and classification, a crisp intro (around 150\u2013200 words max), plus about five key tidbits or facts. It\u2019d also be great to pair each artifact with one or two icons that match its classification\u2014if nothing obvious shows up, just grab some generic museum or artifact icons. Finally, could you include a short React code snippet that demonstrates how to feed this data into a component? And please make sure everything is pulled straight from the Met\u2019s own collection metadata or equally solid sources, since I\u2019ll need real records to back up my demo. Thanks!\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
+          "dependency_analysis": "Step 1\u21922: list-departments supplies departmentId for search-museum-objects. Decision: if search returns <3, branch to a second search-museum-objects call with title=true. Step 2\u21923: search-museum-objects yields objectIds consumed by get-museum-object. Step 3\u21924: each artifact\u2019s title/classification feeds search_wikipedia. Step 4\u21925: get_summary result length drives conditional calls to summarize_article_section or summarize_article_for_query. Step 5\u21926: summaries and classification feed extract_key_facts. Parallel chain: list_icons \u2192 search_icons for each classification \u2192 validation against list_icons, with fallback query if empty. Final consolidation: get_platform_usage(react) combines with artifacts and icons data. Cross-server dependencies: Met data (classification) drives Wikipedia and Huge Icons queries; icon search results are cross-validated against list_icons; React usage ties icon data back into the UI context.",
+          "distraction_servers": [
+            "BioMCP",
+            "DEX Paprika",
+            "FruityVice",
+            "Google Maps",
+            "Math MCP",
+            "Medical Calculator",
+            "NixOS",
+            "OSINT Intelligence",
+            "Reddit",
+            "Unit Converter"
+          ]
+        }
+      ],
+      "servers": [
+        "Metropolitan Museum",
+        "Huge Icons",
+        "Wikipedia"
+      ],
+      "combination_name": "Creative Resources",
+      "combination_type": "three_server_combinations"
+    }
+  ],
+  "total_tasks": 0
+}

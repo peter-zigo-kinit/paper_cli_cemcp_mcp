@@ -1,0 +1,22 @@
+[project]
+name = "code-execution-mcp-17-nov"
+version = "1.0.0"
+description = "MCP Benchmark Comparison Dashboard - Compare Traditional MCP vs Code Execution MCP"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi>=0.121.2",
+    "fastmcp>=2.14.1",
+    "langchain>=0.3.0",
+    "langchain-openai>=1.0.3",
+    "mcp>=1.21.1",
+    "mcp-client>=0.0.0",
+    "openai>=2.8.0",
+    "pandas>=2.3.3",
+    "plotly>=5.18.0",
+    "pydantic>=2.0.0",
+    "python-dotenv>=1.2.1",
+    "python-multipart>=0.0.9",
+    "requests>=2.32.5",
+    "uvicorn[standard]>=0.38.0"
+]

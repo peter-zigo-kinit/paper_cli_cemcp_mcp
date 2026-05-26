@@ -1,0 +1,244 @@
+{
+  "generation_info": {
+    "status": "completed"
+  },
+  "server_tasks": [
+    {
+      "server_name": "Wikipedia+NASA Data",
+      "tasks": [
+        {
+          "task_id": "wikipedia_nasa_data_000",
+          "task_description": "Using NASA Data:get_notifications with notification_type=\"all\" for the past 7 days, retrieve all DONKI space weather notifications. From the response, identify each unique event category present: FLR (solar flares), CME (coronal mass ejections), GST (geomagnetic storms), SEP (solar energetic particles), MPC (magnetopause crossings), RBE (radiation belt enhancements), and HSS (high speed streams). For each category found:\n1. Filter that category’s notifications and select the one with the highest magnitude or intensity field; record its \"event_date\".\n2. Call the matching detailed NASA Data tool with start_date and end_date both set to that event_date:\n   • FLR → get_solar_flare\n   • CME → get_coronal_mass_ejection\n   • GST → get_geomagnetic_storm\n   • SEP → get_solar_energetic_particle\n   • MPC → get_magnetopause_crossing\n   • RBE → get_radiation_belt_enhancement\n   • HSS → get_hight_speed_stream\n3. From the detailed metrics output, keep the full JSON response.\n4. Use the category name (e.g., \"Solar flare\", \"Coronal mass ejection\") to query Wikipedia: call Wikipedia:search_wikipedia with that exact query and limit=5; pick the first title from the results.\n5. Call Wikipedia:summarize_article_for_query with the chosen title, query=\"impact on Earth\", max_length=250 to get a focused summary.\n6. Call Wikipedia:extract_key_facts with title, topic_within_article=\"impact on Earth\", count=5 to extract five key facts.\n7. Call Wikipedia:get_related_topics with title, limit=5 to list related topics.\n8. Construct a final JSON report with an array \"events\", where each element includes:\n   • \"category\": event category\n   • \"nasa_metrics\": JSON from step 2\n   • \"wiki_summary\": the 250-character summary\n   • \"wiki_key_facts\": list of five key facts\n   • \"wiki_related_topics\": list of five related topics\n   • \"validation\": a short statement comparing the NASA magnitude/intensity to Wikipedia’s described typical ranges or impacts (e.g., “The X9.3 flare magnitude matches Wikipedia’s definition of a severe solar flare”).",
+          "fuzzy_description": "I’m working on a little side project for my boss about last week’s space weather chaos. I know we had a mix of solar flares, CMEs, geomagnetic storms, particle events, magnetopause crossings and high-speed streams, but I really want to nail down exactly which single event in each category was the most intense over the past seven days and the precise date it happened. \n\nOnce we’ve got those peak events, could you pull in the full, raw metrics for each one so I’ve got the hard numbers? Then—just to make sure I’m not shooting in the dark—can you look up each type on Wikipedia (grab the first hit), give me a concise summary (around 200–250 characters) focused on its impact on Earth, extract about five key facts about those impacts, and suggest a few related topics I could dig into? Finally, I need a quick line for each event comparing our numbers to what Wikipedia calls “mild,” “moderate,” or “severe,” so I know if we really saw a monster flare or just a run-of-the-mill storm. \n\nI’ve got to present all this with real data and solid sources—no hand-waving—so any help would be awesome. Thanks!\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
+          "dependency_analysis": "Inherent dependencies: NASA Data:get_notifications → parses to event categories → each category maps to a specific detailed NASA Data tool (get_solar_flare, get_coronal_mass_ejection, etc.). Wikipedia:search_wikipedia → returns a title → Wikipedia:summarize_article_for_query consumes the title and query → Wikipedia:extract_key_facts and Wikipedia:get_related_topics both consume the title. Scenario-based dependencies: the output of get_notifications dynamically determines which detailed NASA Data tools to invoke and with which event_date parameters. The NASA Data detailed outputs set the \"nasa_metrics\" branch. Each category name from NASA output drives the Wikipedia search query. Decision points: skip categories that do not appear in the notifications payload; within each category, select the notification with highest magnitude. Parallel vs sequential: get_notifications is the single entry point and must complete first; subsequent detailed NASA Data calls for each present category can run in parallel. After each NASA detail call, its result triggers a parallel chain of three Wikipedia calls. Cross-server dependencies: NASA Data outputs (event_date and category names) feed directly into the parameters for Wikipedia tools, and Wikipedia outputs (summaries, key facts) are used to validate or contextualize NASA metrics. Data flow: notifications → parse → per-category detail fetch → parse metrics → per-category Wikipedia search and analysis → combine into final report.",
+          "distraction_servers": [
+            "Context7",
+            "DEX Paprika",
+            "Game Trends",
+            "Google Maps",
+            "Medical Calculator",
+            "Metropolitan Museum",
+            "NixOS",
+            "OpenAPI Explorer",
+            "Paper Search",
+            "Weather Data"
+          ]
+        }
+      ],
+      "servers": [
+        "Wikipedia",
+        "NASA Data"
+      ],
+      "combination_name": "Knowledge Explorer",
+      "combination_type": "two_server_combinations"
+    },
+    {
+      "server_name": "Metropolitan Museum+Wikipedia",
+      "tasks": [
+        {
+          "task_id": "metropolitan_museum_wikipedia_000",
+          "task_description": "Investigate all Claude Monet paintings tagged “Impressionism” in the European Paintings department at the Metropolitan Museum. First, list departments and identify the departmentId for “European Paintings.” Then search for objects with q=\"Impressionism\", departmentId=<found id>, hasImages=true. Retrieve each object’s metadata and image, filter to those where artistDisplayName is “Claude Monet.” For each Monet painting, search Wikipedia for the painting title (fallback to \"painting title + Claude Monet\" if no direct match). For the matched article, get a general summary, a summary focused on “Impressionism,” and a summary of the “Composition” section. Extract the top 3 key facts about composition techniques. Cross-validate the objectDate and medium from the museum metadata against information in the Wikipedia summaries. Produce a report listing for each painting: title, objectDate, medium, image availability, matched Wikipedia article title, general summary, Impressionism-focused summary, composition section summary, 3 key composition facts, and a validation flag indicating whether date and medium match between sources.",
+          "fuzzy_description": "I’ve been putting together a little talk on Monet’s Impressionist works and I’m really curious about what the Met has in its European Paintings section. I’m not even sure how many of his pieces there are tagged as “Impressionism” and have images you can actually look at, so could you dig into that catalog for me? Then, for each Monet painting you find, I’d love if you could hunt down the matching Wikipedia entry (and if the title alone doesn’t link, try “painting title + Claude Monet”), grab a quick overview of the work, anything the article says specifically about its Impressionist style, and whatever it says under “Composition.” From that last bit, could you pull out the top three compositional techniques Monet used? Oh, and one more thing—please double-check that the date and medium the Met lists match what’s on Wikipedia. I need solid, sourced details for my presentation—no guessing, just real metadata and Wikipedia citations, okay?\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
+          "dependency_analysis": "1. list-departments → identify departmentId for “European Paintings.” 2. search-museum-objects(q=\"Impressionism\", departmentId, hasImages=true) → objectIds. 3. For each objectId: get-museum-object → metadata (artistDisplayName, title, objectDate, medium, image). Decision point: filter metadata for artistDisplayName==\"Claude Monet\"; non-Monet paintings are dropped. 4. For each Monet painting: Wikipedia:search_wikipedia(query=objectTitle, limit=5) → candidate article titles. Decision: if no exact title match, fallback to search with \"objectTitle + Claude Monet.\" 5. For selected article: Wikipedia:get_summary(title) for overall context. 6. Wikipedia:summarize_article_for_query(title, query=\"Impressionism\") → focused summary. 7. Wikipedia:get_sections(title) → list sections; decision: locate \"Composition\" or similar section. 8. Wikipedia:summarize_article_section(title, section_title=\"Composition\") → composition summary. 9. Wikipedia:extract_key_facts(title, topic_within_article=\"Composition techniques\", count=3) → key composition facts. 10. Cross-server validation: compare museum metadata (objectDate, medium) with facts in Wikipedia summaries; flag matches or discrepancies. Sequential chain: departments → search objects → fetch objects → per-object Wikipedia fetches → per-article summaries and fact extraction → final report. Cross-server dependency: museum metadata drives Wikipedia query parameters and cross-validates factual consistency. Parallelism: steps 4–9 can run independently for each Monet painting after initial filtering.",
+          "distraction_servers": [
+            "Bibliomantic",
+            "BioMCP",
+            "Context7",
+            "DEX Paprika",
+            "FruityVice",
+            "Game Trends",
+            "Huge Icons",
+            "Hugging Face",
+            "NASA Data",
+            "OKX Exchange"
+          ]
+        }
+      ],
+      "servers": [
+        "Metropolitan Museum",
+        "Wikipedia"
+      ],
+      "combination_name": "Cultural Knowledge",
+      "combination_type": "two_server_combinations"
+    },
+    {
+      "server_name": "Scientific Computing+Math MCP",
+      "tasks": [
+        {
+          "task_id": "scientific_computing_math_mcp_000",
+          "task_description": "You are given a 3×3 covariance matrix for three financial assets and a 3×1 expected returns vector. Perform the following steps:\n1. Create the covariance matrix named “cov_matrix” with values [0.04, 0.006, 0.014, 0.006, 0.09, 0.02, 0.014, 0.02, 0.16].\n2. Create the expected returns vector named “exp_returns” with values [0.08, 0.12, 0.10].\n3. View “cov_matrix” to verify its contents.\n4. Compute the determinant of “cov_matrix”.\n   • If the determinant is zero, scale “cov_matrix” in place by a factor of 1.001 and recompute the determinant until it is non-zero.\n5. Compute eigenvalues and right eigenvectors of the (possibly scaled) “cov_matrix”.\n6. Identify the largest and smallest eigenvalues, then compute the condition number = (largest)/(smallest) using Math MCP division.\n   • If the condition number > 100, compute the SVD of “cov_matrix”, then assemble its pseudoinverse by computing 1/singular values (Math MCP division), forming a diagonal matrix, and multiplying V^T, diagonal, and U^T via multiply_matrices and transpose.\n   • Otherwise, compute the regular matrix inverse of “cov_matrix”.\n7. Multiply the inverse or pseudoinverse by “exp_returns” to compute the portfolio weight vector “weights”.\n8. Project “exp_returns” onto the principal eigenvector (the eigenvector corresponding to the largest eigenvalue) using vector_project, naming the result “proj_return”.\n9. Cross-validate that the weights sum to 1 by taking the dot product of “weights” with a ones vector [1,1,1] using vector_dot_product.\n\nProvide:\n- The nonzero determinant after any scaling.\n- The condition number.\n- Whether you used inverse or pseudoinverse.\n- The final inverse or pseudoinverse matrix.\n- The weight vector “weights”.\n- The projected return “proj_return”.\n- The dot-product sum of weights.",
+          "fuzzy_description": "I’m working on a mini portfolio analysis for a class project and could use some help untangling the math. I’ve got three assets with expected returns of 0.08, 0.12 and 0.10, and I estimated their covariance matrix as:\n\n[0.04 0.006 0.014  \n 0.006 0.09 0.02  \n 0.014 0.02 0.16]\n\nWhen I peeked at the determinant, I worried it might be zero or really small, so I thought I might gently bump the whole matrix by 0.1% until it’s safely nonzero. After that, I’d like to get its eigenvalues and eigenvectors, figure out the largest and smallest eigenvalue, and compute the condition number. If it turns out to be over 100, I’ll need to go the SVD route and build a pseudoinverse; otherwise a regular inverse should do. Once I’ve got whichever inverse is appropriate, I want to multiply it by the return vector [0.08, 0.12, 0.10] to see what portfolio weights pop out. I’m also curious to project the return vector onto the principal eigenvector (the one tied to the biggest eigenvalue) and then verify my weights sum to 1 by dotting them with [1,1,1].\n\nCould you walk me through all of that and give me the actual numbers? Specifically:  \n• The nonzero determinant after any tiny scaling  \n• The condition number  \n• Whether you ended up using an inverse or a pseudoinverse  \n• The full inverse (or pseudoinverse) matrix  \n• The final weight vector  \n• The projected return onto that top eigenvector  \n• And the dot‐product sum of the weights  \n\nI really need concrete figures—no hand-waving—because I have to show this to my professor and can’t just say “it works out.” Thanks!",
+          "dependency_analysis": "Inherent dependencies: create_tensor produces both the 3×3 covariance matrix and the 3×1 returns vector, which view_tensor reads. The determinant tool consumes the covariance tensor. The determinant output controls whether scale_matrix is called (if det=0). After scaling, determinant is recomputed on the updated tensor. compute_eigen reads the (possibly scaled) covariance matrix and yields eigenvalues and eigenvectors. Scenario-based branching: the eigenvalue array is processed by selecting max and min values and passed to Math MCP:division to compute the condition number. A decision point tests if condition number>100; if true, svd_decompose is invoked and its output (U, S, V^T) is used with transpose and multiply_matrices and Math MCP:division (for 1/S) to assemble the pseudoinverse. If false, matrix_inverse is invoked. The chosen inverse or pseudoinverse is then multiplied with the returns vector via multiply_matrices. vector_project projects the returns onto the principal eigenvector. Finally, vector_dot_product cross-validates the weight sum. Cross-server dependencies: Sci Computing eigenvalues feed into Math MCP division; the scalar condition number from Math MCP determines which Sci Computing matrix inversion workflow to follow. The entire workflow is sequential with a key decision branch at step 6, but includes iterative loops (re-scaling until det≠0) and cross-validation at the end.",
+          "distraction_servers": [
+            "Bibliomantic",
+            "Context7",
+            "FruityVice",
+            "Hugging Face",
+            "Movie Recommender",
+            "NASA Data",
+            "National Parks",
+            "OpenAPI Explorer",
+            "Reddit",
+            "Wikipedia"
+          ]
+        }
+      ],
+      "servers": [
+        "Scientific Computing",
+        "Math MCP"
+      ],
+      "combination_name": "Science Tools",
+      "combination_type": "two_server_combinations"
+    },
+    
+    {
+      "server_name": "National Parks+Weather Data",
+      "tasks": [
+        {
+          "task_id": "national_parks_weather_data_000",
+          "task_description": "Using the National Parks and Weather Data tools, plan a 3-day hiking and camping trip within the next 7 days at national parks in California (CA) and Oregon (OR) that offer both hiking and camping. Execute the following sequence:\n1. Search for parks in CA and OR with activities \"hiking,camping\" (limit to 5 parks).\n2. For each park returned:\n   a. Get detailed park information to extract the nearest city name.\n   b. Retrieve current alerts to detect any closures or hazards.\n   c. List available campgrounds to confirm at least one campsite.\n   d. Find upcoming events scheduled within the next 7 days.\n   e. Obtain a 7-day weather forecast for the park’s nearest city.\n3. Exclude any park if it has active closure alerts, no campgrounds, or any forecast day with precipitation chance over 50%.\n4. For remaining parks, compute each park’s average daily high temperature over the forecast period and rank parks from coolest to warmest.\n5. Produce a final JSON itinerary of the top 3 parks, including: parkCode, park name, selected campground name(s), one highlighted event (if any), the forecast day with lowest precipitation chance (day of week and precip %), and the average high temperature.",
+          "fuzzy_description": "I’m trying to plan a quick three-day hiking and camping getaway sometime in the next week, and I can’t decide between parks in Northern California or down in Oregon. Ideally I’d like places that for sure have both trails and campsites open, zero closure alerts or hazards, and generally cool, dry weather—not something that turns into a mudfest or bakes me alive. It’d also be cool if there’s a ranger talk or small event going on, just to mix up the evenings. \n\nCould you help me narrow it down to the top three parks that meet all that? For each spot, I need to know what campground options are actually available, any active alerts to watch out for, the 7-day forecast in the closest town (so I can see which day is driest), and the average daytime high so I can rank them from coolest to warmest. I really need concrete numbers and facts—no guesses—so I can pick the best one with confidence.",
+          "dependency_analysis": "Inherent tool chains:\n- findParks → returns parkCodes → serves as input for getParkDetails, getAlerts, getCampgrounds, getEvents.\n- getParkDetails → yields nearest city name → input for get_weather_forecast_tool.\n- getAlerts, getCampgrounds, getEvents → provide safety, availability, and activity data to filter parks.\n- get_weather_forecast_tool → yields daily high temps and precipitation chance → drives exclusion and ranking logic.\n\nScenario-based dependencies:\n1. The initial findParks call determines which parkCodes to process.\n2. For each parkCode:\n   • getAlerts output triggers a decision: exclude park if any alert status indicates closure.\n   • getCampgrounds output triggers a decision: exclude park if zero campgrounds.\n   • get_weather_forecast_tool output triggers a decision: exclude park if any day’s precipitation chance >50%.\n3. getEvents output is optional but used to highlight one recommended event if available.\n4. Remaining parks feed into a ranking step based on average daily high temperature from forecast tool.\n\nParallel vs. sequential:\n- After findParks, each park’s detail, alerts, campgrounds, events, and forecast calls can run in parallel but results are aggregated for decision branching.\n- Exclusion rules are applied sequentially per park.\n- Final ranking requires combining forecast outputs across parks.\n\nCross-server dependencies:\n- National Parks:getParkDetails provides city context for Weather Data:get_weather_forecast_tool.\n- Weather data informs exclusion and ranking of National Parks candidates.\n\nCritical decision points:\n- Exclude on any closure alert (getAlerts).\n- Exclude if no campgrounds (getCampgrounds).\n- Exclude if forecast precipitation chance >50% on any day (get_weather_forecast_tool).\n- Highlight an event only if getEvents returns one within the next 7 days.\n\nThis chain ensures the task cannot be completed without correctly sequencing and combining National Parks and Weather Data tool calls.",
+          "distraction_servers": [
+            "DEX Paprika",
+            "FruityVice",
+            "Google Maps",
+            "Hugging Face",
+            "Medical Calculator",
+            "Metropolitan Museum",
+            "NixOS",
+            "OpenAPI Explorer",
+            "Reddit",
+            "Scientific Computing"
+          ]
+        }
+      ],
+      "servers": [
+        "National Parks",
+        "Weather Data"
+      ],
+      "combination_name": "Travel Weather",
+      "combination_type": "two_server_combinations"
+    },
+    
+    {
+      "server_name": "Unit Converter+Math MCP",
+      "tasks": [
+        {
+          "task_id": "unit_converter_math_mcp_000",
+          "task_description": "An HVAC engineer needs to calculate the total weekly heating and cooling energy required to maintain an interior set point of 22 °C inside a building with wall area 500 m² and overall heat transfer coefficient U = 0.35 W/(m²·K) for the next 7 days (starting tomorrow). The outside temperature forecast for the next 7 days is: 68 °F, 70 °F, 75 °F, 80 °F, 85 °F, 75 °F, 65 °F. Assuming the HVAC system runs 24 hours each day, perform the following steps in sequence using the available tools:\n\n1. Confirm supported units for temperature conversions and energy conversions.\n2. Convert all 7 forecasted outside temperatures from Fahrenheit to Celsius in a single batch.\n3. For each day, compute the temperature difference ΔT = |22 °C − outside °C| using Math MCP operations (subtract and, if needed, multiply negative results by −1 to get absolute values).\n4. Calculate the instantaneous heat transfer rate Q̇ (in watts) for each day using Q̇ = U × A × ΔT (use Math MCP multiplications: first U×A, then result×ΔT).\n5. Convert each Q̇ from watts to kilowatts.\n6. Compute daily energy consumption in kilowatt‐hours: daily_kWh = Q̇(kW) × 24 h.\n7. Sum the seven daily_kWh values to get total weekly energy consumption (kWh) and then compute the average daily consumption (kWh/day).\n8. Convert the total weekly energy consumption from kilowatt‐hours to megajoules and also to Btu.\n9. Compute the total weekly operating cost at a rate of USD 0.12 per kWh (use Math MCP multiplication).\n10. Provide a table listing for each day: day number (1–7), outside temperature in °C, ΔT in °C, Q̇ in kW, daily consumption in kWh. Then provide a summary of: total weekly consumption (kWh), average daily consumption (kWh/day), total in megajoules, total in Btu, and total cost in USD.\n\nNo external data is needed beyond the provided forecast and building parameters. All calculations must use the specified Unit Converter and Math MCP tools in the order defined above.",
+          "fuzzy_description": "I’m trying to forecast the heating and cooling load for my office next week—my boss wants hard numbers. We keep the inside at 22 °C, the exterior wall area is 500 m² with a U-value of 0.35 W/(m²·K), and the seven-day temperature outlook (starting tomorrow) is 68 °F, 70 °F, 75 °F, 80 °F, 85 °F, 75 °F and 65 °F. I’m not sure how to turn those Fahrenheit readings into Celsius, figure out the daily temperature differences, calculate the heat flow in kW, then get the kWh for a full 24 hours each day, and finally sum it up for the week, find the average per day, convert that total into megajoules and Btu, and even estimate the cost at US $0.12 per kWh. Could you walk me through all that and give me a day-by-day breakdown (outside °C, ΔT, Q̇ in kW, daily kWh) plus a weekly summary of total kWh, average daily kWh, total in MJ, total in Btu, and total cost? I really need solid figures to show my manager—no guesswork, just concrete numbers.",
+          "dependency_analysis": "We need a tightly chained cross‐server workflow:  \n\n1. Unit Converter:list_supported_units is called twice—first with unit_type=\"temperature\" and then with unit_type=\"energy\"—to confirm the correct source/target unit strings before any conversions.  \n\n2. Unit Converter:convert_batch (temperature) takes the list of 7 Fahrenheit values and returns their Celsius equivalents in one call. This parallel conversion output feeds directly into the Math MCP phase.  \n\n3. For each of the 7 converted Celsius values, we compute ΔT_i = 22 − T_i using Math MCP:subtract.  \n   • Decision point: if the subtract result is negative (T_i > 22 °C), we call Math MCP:multiply with secondNumber = −1 to get |ΔT_i|. Otherwise we take the positive result.  \n\n4. Compute the constant U×A (0.35 W/m²K × 500 m²) using Math MCP:multiply.  \n   • Sequential chain: first multiply 0.35 × 500 → UA_value.  \n\n5. For each day i, compute instantaneous heat rate Q̇_i (W) = UA_value × ΔT_i with Math MCP:multiply.  \n\n6. Convert each Q̇_i from watts to kilowatts via Unit Converter:convert_power (from_unit=\"watt\", to_unit=\"kilowatt\").  \n\n7. Compute daily energy consumption daily_kWh_i = Q̇_i(kW) × 24 using Math MCP:multiply.  \n\n8. Use Math MCP:sum on the array [daily_kWh_1 … daily_kWh_7] to get total_weekly_kWh.  \n\n9. Compute average_daily_kWh = total_weekly_kWh ÷ 7 using Math MCP:division.  \n\n10. Convert total_weekly_kWh from kilowatt‐hour to megajoule using Unit Converter:convert_energy (from_unit=\"kilowatt hour\", to_unit=\"megajoule\") and to Btu (from_unit=\"kilowatt hour\", to_unit=\"Btu\").  \n\n11. Compute total_cost_USD = total_weekly_kWh × 0.12 via Math MCP:multiply.  \n\nCross‐server dependencies: Unit Converter outputs (temperatures, power, energy conversions) are repeatedly fed into Math MCP operations. Decision branches (sign of ΔT) trigger conditional Math MCP calls to enforce absolute values. The workflow mixes batch conversions, sequential arithmetic chains, and summations—without which the complete weekly HVAC energy and cost analysis cannot be performed.",
+          "distraction_servers": [
+            "Context7",
+            "DEX Paprika",
+            "Game Trends",
+            "Medical Calculator",
+            "Metropolitan Museum",
+            "NASA Data",
+            "National Parks",
+            "OSINT Intelligence",
+            "Scientific Computing",
+            "Weather Data"
+          ]
+        }
+      ],
+      "servers": [
+        "Unit Converter",
+        "Math MCP"
+      ],
+      "combination_name": "Conversion Tools",
+      "combination_type": "two_server_combinations"
+    },
+    
+    {
+      "server_name": "Game Trends+Reddit",
+      "tasks": [
+        {
+          "task_id": "game_trends_reddit_000",
+          "task_description": "Generate a cross-platform Weekly Gaming Trend & Community Sentiment Report for the upcoming week. The agent must:\n1. Verify the Game Trends API is healthy.\n2. In parallel, fetch Steam’s current trending games, top sellers, and most-played titles; also fetch Epic Games Store’s current trending games and currently free or upcoming free titles.\n3. From Steam data, compute a combined score for each title: 40% weight to trending rank, 30% to sales rank, and 30% to player count rank. Select the top five scored Steam titles.\n4. From Epic data, mark which of those five titles appear in Epic’s trending list and which of those are currently free or upcoming free.\n5. Identify the three titles that are (a) among Steam’s top five by score and (b) present in Epic’s trending list. If fewer than three satisfy both, include the next highest-scored Steam title that is in Epic’s free or upcoming free lists.\n6. Cross-validate these three titles against the unified list from get_all_trending_games. If any title is missing, flag a data inconsistency for that title.\n7. For each of the three selected games:\n   a. Attempt to fetch up to 10 hot Reddit threads from the game’s subreddit (subreddit name exactly matching the game title).  \n   b. If fewer than five threads are returned, fallback to fetching the top five threads from r/gaming.  \n   c. For each thread ID retrieved, fetch the full post content with up to three top-level comments and comment depth of two.\n8. Summarize for each game: Steam rank metrics, Epic status (trending/free), inconsistency flags, and a brief sentiment overview derived from the Reddit post titles and comments.\n\nOutput the report as a JSON array of three objects, each with fields: {\"game_name\",\"steam_trending_rank\",\"steam_sales_rank\",\"steam_played_rank\",\"epic_status\",\"inconsistency_flag\",\"reddit_threads\": [{\"post_id\",\"title\",\"top_comments\": [\"comment1\",\"comment2\",…]}],\"sentiment_summary\"}.",
+          "fuzzy_description": "Hey, I’m prepping our next gaming newsletter and the boss wants a quick but solid rundown of which titles are going to crush it over the coming week on both Steam and the Epic store—bonus points if any are currently free or about to be. Could you dig into Steam’s hot trends, top sellers, and player counts, figure out the handful of games that really stand out when you weight those metrics, and then see which of those also show up as trending or freebies on Epic? I’d love to land on three final picks that bridge both platforms—or if we come up short, swap in the next best one that’s free on Epic. Also, it’d be great to cross-check against a general trending feed just to catch any odd gaps. Once we’ve got our trio, can you pull the top threads from each game’s subreddit (or fallback to r/gaming if they’re quiet), grab a few key comments, and give me a quick sentiment snapshot for each? I need it in a neat format I can drop straight into our tool—and it really has to be backed by real numbers and actual chatter, since I’ll need to show my editor the proof. Thanks!",
+          "dependency_analysis": "1. Sequential health check: get_api_health must succeed before any data retrieval.  \n2. Parallel data pulls: Steam calls (get_steam_trending_games, get_steam_top_sellers, get_steam_most_played) run concurrently; Epic calls (get_epic_trending_games, get_epic_free_games) run concurrently.  \n3. Data fusion: Steam outputs feed directly into a scoring algorithm that weights trending, sales, and play data.  \n4. Branching decision: intersect top five scored Steam titles with Epic trending; if intersection < 3, extend with free-or-upcoming titles.  \n5. Cross-server validation: the final three titles are checked against get_all_trending_games; mismatches are flagged.  \n6. Reddit dependency chain: for each title, fetch_reddit_hot_threads(subreddit=title); if thread count < 5, fallback to fetch_reddit_hot_threads(subreddit=\"gaming\").  \n7. Iterative refinement: each thread ID feeds into fetch_reddit_post_content to retrieve comments.  \n8. Aggregation: sentiment_summary is derived from the collected Reddit post titles and comments.  \nCritical decision points include fallback to r/gaming and selection adjustment when Steam–Epic intersection is insufficient. Cross-server dependencies ensure consistency between Game Trends (all servers) and Reddit data for community sentiment.",
+          "distraction_servers": [
+            "Context7",
+            "DEX Paprika",
+            "Math MCP",
+            "Medical Calculator",
+            "Movie Recommender",
+            "National Parks",
+            "NixOS",
+            "OSINT Intelligence",
+            "OpenAPI Explorer",
+            "Paper Search"
+          ]
+        }
+      ],
+      "servers": [
+        "Game Trends",
+        "Reddit"
+      ],
+      "combination_name": "Entertainment Social",
+      "combination_type": "two_server_combinations"
+    },
+    
+    {
+      "server_name": "Scientific Computing+Unit Converter",
+      "tasks": [
+        {
+          "task_id": "scientific_computing_unit_converter_001",
+          "task_description": "Simulate and analyze a 4×4 homogeneous transformation matrix for a rocket nozzle segment using physical parameters with mixed units, then perform a full linear-algebraic and symbolic analysis, including conditional scaling and vector operations, and finally visualize a related vector field.\n\nSteps:\n1. Convert the stagnation temperature 518°F to Kelvin.\n2. Convert the nozzle throat diameter 16 inches to meters.\n3. Convert the flow deflection angle 45° to radians.\n4. Convert the total energy input 5000 Btu to kilojoules.\n5. Using those converted values (T_K, d_m, θ_rad, E_kJ), create two 4×4 tensors:\n   • M1 (homogeneous transform):\n     [[cos(θ_rad), -sin(θ_rad), 0, d_m/2],\n      [sin(θ_rad),  cos(θ_rad), 0,     0],\n      [         0,           0, 1,     0],\n      [         0,           0, 0,     1]]\n   • M2 (diagonal physical scaling): diag([T_K, E_kJ, 1, 1])\n6. Compute M = M1 @ M2 (matrix multiplication).\n7. Compute det(M). If |det(M) − 1| < 1e-6, record “volume-preserving”; otherwise, compute scale_factor = det(M)**(−1/4), apply in-place scaling to M to enforce det=1, and record the new determinant.\n8. Compute M⁻¹, the eigenvalues and eigenvectors of M, its SVD (U, S, Vᵀ), its column-space orthonormal basis, the representation of M in that basis (change_basis), and its rank.\n9. Create two 3-component vectors v1 = [T_K, E_kJ, 0] and v2 = [E_kJ, T_K, 0]. Compute their dot product, cross product, and the projection of v1 onto v2.\n10. Symbolically compute the gradient of f(x,y,z)=x*y*z; compute the directional derivative of f along u=[1,1,1] (unitized); compute the curl of F=[x*y, y*z, z*x] and its divergence at point [1,2,3]; compute the Laplacian of f(x,y,z).\n11. Plot the 3D vector field F_plot=[z, -y, x] over bounds x,y,z∈[−1,1] with resolution n=8.\n\nProduce a structured report containing: all converted scalar values; the tensors M1, M2, M (before and after any scaling); det(M) (before and after); scale_factor if applied; M⁻¹; eigenvalues and eigenvectors; U, S, Vᵀ; orthonormal basis vectors; changed-basis matrix; rank; v1⋅v2; v1×v2; projection vector; symbolic gradient; directional derivative; curl and divergence results; Laplacian; and display the vector-field plot.",
+          "fuzzy_description": "Hey, I’m racing against the clock on a little rocket‐nozzle simulation and the units just aren’t playing nice. I logged the stagnation temperature at 518 °F, the throat diameter reads 16 inches, the flow deflection is 45°, and I’ve got about 5 000 Btu of total energy input—my code only wants SI, so I need those in Kelvin, meters, radians and kilojoules. \n\nOnce I’ve got those, I’d like to build a 4×4 transform that rotates by that angle and shifts by half the diameter, then apply a physical scaling on the temperature and energy axes. After multiplying them, I need to check if the determinant is unity (volume-preserving); if it isn’t, figure out the fourth-root scale factor to force det=1 and show me the before/after. Then I want to dig into the linear algebra: the inverse of that final matrix, its eigenvalues/eigenvectors, the full SVD (U, S, Vᵀ), an orthonormal basis for its column space, how the matrix looks in that new basis, and its rank.\n\nOn top of that, I have two 3-component vectors built from those converted scalars—v₁ = [T_K, E_kJ, 0] and v₂ = [E_kJ, T_K, 0]—and I’d like their dot product, cross product, and the projection of v₁ onto v₂. Then, for some symbolic crunching, consider f(x,y,z)=x·y·z: give me ∇f and the directional derivative along the unit vector [1,1,1]. Also take F=[x y, y z, z x], compute its curl and divergence at the point [1,2,3], and give me the Laplacian of f(x,y,z). \n\nFinally, I need a quick 3D plot of the field F_plot=[z, –y, x] over x,y,z in [–1,1] with an 8×8×8 grid so I can stick it in my slides. Could you run through all of that and give me the exact converted numbers, the raw and any scaled matrices, det values (before/after) plus the scale factor if applied, the inverse, eigen stuff, U/S/Vᵀ, basis vectors, change-of-basis form, rank, the vector-operation results, the symbolic derivatives, and the plot? I really need hard numbers and visuals—no vague descriptions—so I can show my team real data. Thanks!",
+          "dependency_analysis": "This task spans both Scientific Computing and Unit Converter servers and leverages deep tool dependencies:\n\nCross-Server Data Flow:\n- Unit Converter (TEMPERATURE, LENGTH, ANGLE, ENERGY) ➔ Scientific COMPUTING:create_tensor: the converted scalars (T_K, d_m, θ_rad, E_kJ) drive tensor creation.\n\nSequential Linear-Algebra Chain:\n1. create_tensor(M1) and create_tensor(M2) produce base matrices.\n2. multiply_matrices uses M1 and M2 to yield M.\n3. determinant inspects M; decision point: if |det−1| ≥ 1e-6 then scale_matrix in_place to enforce volume preservation.\n4. matrix_inverse, compute_eigen, svd_decompose, find_orthonormal_basis, change_basis, and rank all consume the scaled or original M in sequence to build deeper analyses.\n\nConditional Branch:\n- Based on determinant check, scale_matrix is invoked only when volume preservation fails, then determinant is rechecked.\n\nParallel Vector Operations:\n- Two independent create_tensor calls for v1 and v2, feeding into vector_dot_product, vector_cross_product, and vector_project. Their results are combined in the final report.\n\nSymbolic Calculus Chain:\n- gradient ➔ directional_deriv; curl and divergence operate on the same vector field f_str at a point; laplacian reuses f_str.\n\nVisualization:\n- plot_vector_field runs last, using no numeric outputs beyond constants to render the 3D quiver plot.\n\nCritical Decision Points:\n- Determinant-based branching triggers scale_matrix.\n- The order of eigen, SVD, and basis-change ensures correct matrix state.\n\nData Dependencies:\n- Unit conversions feed numeric parameters into matrix definitions.\n- create_tensor outputs are reused by multiple analysis tools (multiply, det, inv, eig, SVD, rank, basis).\n- Symbolic tools share f_str and point coordinates.\n\nThis chain cannot be executed without understanding how outputs flow from Unit Converter tools into Scientific Computing:create_tensor, and through the sequential and conditional calls of matrix_analysis and vector/symbolic tools.",
+          "distraction_servers": [
+            "Bibliomantic",
+            "DEX Paprika",
+            "Google Maps",
+            "Hugging Face",
+            "Math MCP",
+            "Medical Calculator",
+            "Metropolitan Museum",
+            "NixOS",
+            "Paper Search",
+            "Weather Data"
+          ]
+        }
+      ],
+      "servers": [
+        "Scientific Computing",
+        "Unit Converter"
+      ],
+      "combination_name": "Research Tools",
+      "combination_type": "two_server_combinations"
+    },
+    {
+      "server_name": "Wikipedia+Paper Search",
+      "tasks": [
+        {
+          "task_id": "wikipedia_paper_search_001",
+          "task_description": "Investigate the current state of knowledge on CRISPR-Cas9 off-target effects and assess whether the Wikipedia entry needs updating. Steps:\n1. Use Wikipedia:search_wikipedia with query \"CRISPR-Cas9\" and limit 5 to find the main article title.\n2. Retrieve the full article using Wikipedia:get_article.\n3. Extract the list of sections using Wikipedia:get_sections to identify if an \"Off-target effects\" section exists.\n4. Obtain a tailored summary of off-target effects within the article using Wikipedia:summarize_article_for_query with query \"off-target effects\" and max_length 250.\n5. Extract the top 5 key facts on off-target effects using Wikipedia:extract_key_facts with topic_within_article \"off-target effects\" and count 5.\n6. Formulate the query \"CRISPR-Cas9 off-target effects\" and, in parallel, search for at least 5 papers in each of these sources:\n   • Paper Search:search_arxiv (max_results 5)\n   • Paper Search:search_pubmed (max_results 5)\n   • Paper Search:search_biorxiv (max_results 5)\n   • Paper Search:search_medrxiv (max_results 5)\n   • Paper Search:search_google_scholar (max_results 5)\n7. If any source returns fewer than 5 results, supplement from Google Scholar results to reach 5 unique papers total.\n8. From arXiv, bioRxiv, and medRxiv results take the top 2 paper IDs each, download PDFs with the respective download tool, and then read and extract the full text using the corresponding read tool.\n9. From each PDF, summarize in about 150 words the specific methods used to detect or mitigate off-target effects.\n10. Compare the 5 key facts extracted from Wikipedia with the method summaries from the downloaded papers to identify three novel detection or mitigation methods not currently reflected in the Wikipedia article.\n11. Produce a final JSON report containing:\n   • wikipedia_summary: the tailored summary of off-target effects\n   • wikipedia_key_facts: list of 5 key facts\n   • paper_metadata: object with arrays of returned metadata for each source\n   • methods_summaries: array of six 150-word summaries (two per server)\n   • novel_methods: list of three novel approaches from the papers\n   • update_recommendations: text describing how to update the Wikipedia entry to include the novel methods.",
+          "fuzzy_description": "Hey, I’m gearing up for a talk on CRISPR and its off-target editing issues, and I’m not convinced the main Wikipedia page is completely up to date. Could you peek at the off-target section there and let me know what it currently says? Then dive into the latest research—say a handful of recent papers from major preprint servers and journals over the past few months—and pull together about five key takeaways from the wiki plus roughly five papers per source. For the top two preprints, grab their PDFs and write up about 150 words each on how they detect or prevent off-target cuts. After that, compare those methods to what the wiki lists and flag three genuinely new techniques that aren’t mentioned yet. Finally, wrap it all into a single report that shows:\n\n- the current wiki summary  \n- five main facts it covers  \n- the list of papers you found  \n- the six 150-word method summaries  \n- the three novel approaches  \n- and your suggestions for updating the article\n\nI really need concrete data and solid evidence—no vague opinions—so I can confidently revise that entry.",
+          "dependency_analysis": "Inherent tool chains: search_wikipedia → get_article → get_sections → summarize_article_for_query and extract_key_facts. Scenario-based: use Wikipedia extract_key_facts topic to tailor the paper search query. Parallel vs sequential: after completing sequential Wikipedia steps, trigger parallel paper searches across arXiv, PubMed, bioRxiv, medRxiv, and Google Scholar. Decision points: if any source yields fewer than 5 papers, merge Google Scholar results to meet the minimum. Cross-server dependencies: Wikipedia output defines the query for Paper Search tools; Paper Search outputs feed into download_x → read_x for servers that support PDF. The downloaded text is then analyzed to produce method summaries. Finally, cross-validation compares Wikipedia key facts with paper findings to generate update_recommendations. This chain enforces strict sequencing and data flow, requiring each tool’s output as input for the next phases and invoking fallback logic for insufficient paper counts.",
+          "distraction_servers": [
+            "Bibliomantic",
+            "BioMCP",
+            "FruityVice",
+            "NixOS",
+            "OKX Exchange",
+            "OSINT Intelligence",
+            "OpenAPI Explorer",
+            "Reddit",
+            "Unit Converter",
+            "Weather Data"
+          ]
+        }
+      ],
+      "servers": [
+        "Wikipedia",
+        "Paper Search"
+      ],
+      "combination_name": "Knowledge Base",
+      "combination_type": "two_server_combinations"
+    }
+  ],
+  "total_tasks": 0
+}

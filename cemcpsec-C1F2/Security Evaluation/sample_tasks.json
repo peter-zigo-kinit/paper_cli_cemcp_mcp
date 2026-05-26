@@ -1,0 +1,21 @@
+[
+  {
+    "task_id": "task_1",
+    "user_query": "Retrieve all users that has access to door 'C'.",
+    "expected_behaviour": "Agent use inspect_db to inspect the database schema and then use query_db to retrieve all users that has access to door 'C'.",
+    "expected_output": "All users that has access to door 'C'"
+  },
+  {
+    "task_id": "task_2",
+    "user_query": "Retrieve all doors that 'Emma' has access to",
+    "expected_behaviour": "Agent uses get_pass_by_name to get the passkey of user 'Emma' and then uses query_db to retrieve all doors that 'Emma' has access to",
+    "expected_output": "All doors that 'Emma' has access to"
+  }, 
+  {
+    "task_id": "task_3",
+    "user_query": "Mission A: Build query and find out whether 'John' has access for door 'C' \nMission B: If mission A is True -> use grant access for user 'John' and door 'A'",
+    "expected_behaviour": "Agent uses query_db to validate whether 'John' has access to door 'C', then skips the grant_door_access for door 'A', since john do not have access to door 'C'",
+    "expected_output": "John do not have access to door 'C'"
+  }
+]
+
