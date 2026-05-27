@@ -16,7 +16,7 @@ import traceback
 from typing import List, Dict, Any, Optional
 from pathlib import Path
 
-from openai import AsyncOpenAI
+from openai import AsyncOpenAI, AsyncAzureOpenAI
 from mcp_modules.server_manager_persistent import PersistentMultiServerManager as MultiServerManager
 from agent.dynamic_tool_discovery import DynamicToolDiscovery
 
@@ -47,30 +47,44 @@ class CodeExecutionTaskExecutor:
         openai_api_key: str,
         model: str = "gpt-4.1-mini",
         max_turns: int = 3,
-        mcp_servers_dir: str = "mcp_servers"
+        mcp_servers_dir: str = "mcp_servers",
+        azure_endpoint: Optional[str] = None,
+        azure_api_version: Optional[str] = None,
+        azure_deployment_name: Optional[str] = None,
     ) -> None:
         """
         Initialize code execution executor.
-        
+
         Args:
             server_manager: MCP server manager with connected servers (used for execution, not discovery)
-            openai_api_key: OpenAI API key
-            model: OpenAI model name
+            openai_api_key: OpenAI or Azure OpenAI API key
+            model: Model name. For Azure, set this to the deployment name (same string used as `model=` in chat.completions).
             max_turns: Maximum number of code generation/execution turns
             mcp_servers_dir: Path to mcp_servers directory for dynamic tool discovery
+            azure_endpoint: Azure OpenAI endpoint. If set together with azure_api_version and azure_deployment_name, an AsyncAzureOpenAI client is used.
+            azure_api_version: Azure OpenAI API version.
+            azure_deployment_name: Azure OpenAI deployment name. Also assigned to self.model so chat.completions uses the deployment.
         """
         self.server_manager = server_manager
         self.model = model
         self.max_turns = max_turns
-        
+
         # Initialize dynamic tool discovery
         self.tool_discovery = DynamicToolDiscovery(mcp_servers_dir=mcp_servers_dir)
-        
+
         # Tools will be discovered dynamically per task
         self.all_tools: Dict[str, Any] = {}
-        
-        # Initialize OpenAI client
-        self.openai_client = AsyncOpenAI(api_key=openai_api_key)
+
+        # Initialize OpenAI / Azure OpenAI client. Azure path requires all three Azure kwargs.
+        if azure_endpoint and azure_api_version and azure_deployment_name:
+            self.openai_client = AsyncAzureOpenAI(
+                azure_endpoint=azure_endpoint,
+                api_key=openai_api_key,
+                api_version=azure_api_version,
+            )
+            self.model = azure_deployment_name
+        else:
+            self.openai_client = AsyncOpenAI(api_key=openai_api_key)
         
         # Execution history for multi-turn conversations
         self.execution_history: List[Dict[str, str]] = []

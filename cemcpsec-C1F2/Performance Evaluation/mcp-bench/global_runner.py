@@ -281,11 +281,15 @@ class GlobalRunner:
             azure_client = AsyncAzureOpenAI(
                 azure_endpoint=azure_endpoint,
                 api_key=azure_key,
-                api_version=config_loader.get_azure_api_version()
+                api_version=os.getenv("AZURE_OPENAI_API_VERSION") or config_loader.get_azure_api_version()
             )
-            # Try to use gpt-4.1 from Azure if available, otherwise fallback to o4-mini
-            self._judge_provider = LLMProvider(azure_client, "gpt-4.1", "azure")
-            logger.info("Using gpt-4.1 (Azure) as judge model")
+            judge_deployment = (
+                os.getenv("AZURE_JUDGE_DEPLOYMENT")
+                or os.getenv("AZURE_AGENT_DEPLOYMENT")
+                or "gpt-4.1-mini"
+            )
+            self._judge_provider = LLMProvider(azure_client, judge_deployment, "azure")
+            logger.info(f"Using {judge_deployment} (Azure) as judge model")
             return self._judge_provider
         
         logger.warning("No judge provider credentials available. Evaluation will be skipped.")
@@ -522,25 +526,38 @@ class GlobalRunner:
         start_time = time.time()
         
         try:
-            # Get OpenAI API key
-            openai_api_key = os.getenv("OPENAI_API_KEY")
-            if not openai_api_key:
-                raise ValueError("OPENAI_API_KEY environment variable not set")
-            
             # Clean model name (remove _code_execution suffix if present)
             clean_model_name = model_name.replace("_code_execution", "") if model_name else "gpt-4o-mini"
-            
+
             # Get mcp_servers directory path (relative to mcp-bench directory)
             mcp_servers_dir = str(self.mcp_bench_dir / "mcp_servers")
-            
-            # Create code execution executor with dynamic tool discovery
-            code_executor = CodeExecutionTaskExecutor(
-                server_manager=server_manager,
-                openai_api_key=openai_api_key,
-                model=clean_model_name,
-                max_turns=7,
-                mcp_servers_dir=mcp_servers_dir
-            )
+
+            # Prefer Azure when its env vars are present; fall back to OpenAI-direct otherwise.
+            azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
+            azure_key = os.getenv("AZURE_OPENAI_API_KEY")
+            if azure_endpoint and azure_key:
+                azure_api_version = os.getenv("AZURE_OPENAI_API_VERSION") or config_loader.get_azure_api_version()
+                code_executor = CodeExecutionTaskExecutor(
+                    server_manager=server_manager,
+                    openai_api_key=azure_key,
+                    model=clean_model_name,
+                    max_turns=7,
+                    mcp_servers_dir=mcp_servers_dir,
+                    azure_endpoint=azure_endpoint,
+                    azure_api_version=azure_api_version,
+                    azure_deployment_name=clean_model_name,
+                )
+            else:
+                openai_api_key = os.getenv("OPENAI_API_KEY")
+                if not openai_api_key:
+                    raise ValueError("OPENAI_API_KEY environment variable not set")
+                code_executor = CodeExecutionTaskExecutor(
+                    server_manager=server_manager,
+                    openai_api_key=openai_api_key,
+                    model=clean_model_name,
+                    max_turns=7,
+                    mcp_servers_dir=mcp_servers_dir,
+                )
             
             # Get task query - same way as benchmark runner
             # Task structure: task_info has 'task' key containing task_data dict
