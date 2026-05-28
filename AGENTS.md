@@ -11,3 +11,7 @@ Default canonical label strings (`needs-triage`, `needs-info`, `ready-for-agent`
 ### Domain docs
 
 Single-context: `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.
+
+### Development setup
+
+Per-project venv layout (vendored harness vs fresh implementation), harness setup, and how to run the Phase 1 smoke. See `docs/development.md`.

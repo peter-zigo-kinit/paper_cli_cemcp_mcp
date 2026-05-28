@@ -1,0 +1,21 @@
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Python — fresh-impl venv lives at repo root; vendored venv lives next to its requirements.txt
+.venv/
+**/.venv/
+__pycache__/
+*.pyc
+
+# Node
+node_modules/
+
+# Vendored project runtime / build artefacts
+cemcpsec-C1F2/Performance Evaluation/mcp-bench/results/
+cemcpsec-C1F2/Performance Evaluation/mcp-bench/logs/
+cemcpsec-C1F2/Performance Evaluation/mcp-bench/cache/*.db-shm
+cemcpsec-C1F2/Performance Evaluation/mcp-bench/cache/*.db-wal
+cemcpsec-C1F2/Performance Evaluation/mcp-bench/mcp_servers/math-mcp/build/
+cemcpsec-C1F2/Performance Evaluation/mcp-bench/mcp_servers/unit-converter-mcp/uv.lock
