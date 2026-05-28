@@ -1,8 +1,26 @@
 # MCP-Bench with Code Execution Agent
 
-> **⚠️ This bundle is vendored as the starting point for the calibration in the parent repo.**
-> For our actual setup (Azure OpenAI pin, repo-root `.env`, per-project venv layout, smoke-run instructions), see [`../../docs/development.md`](../../docs/development.md).
-> The Installation section below describes the authors' original setup, which we deliberately diverge from per ADR-0002 ([`../../docs/adr/0002-azure-pin-and-judge-config.md`](../../docs/adr/0002-azure-pin-and-judge-config.md)).
+> **⚠️ This bundle is vendored as the starting point for the calibration in the parent repo.** The Installation section below describes the authors' original setup; we deliberately diverge from it per ADR-0002 ([`../../docs/adr/0002-azure-pin-and-judge-config.md`](../../docs/adr/0002-azure-pin-and-judge-config.md)). Full setup + per-project venv layout in [`../../docs/development.md`](../../docs/development.md).
+>
+> **Our setup at a glance (use this, not the conda instructions below):**
+>
+> - **Venv:** lives next to this README at `mcp-bench/.venv` (built from `mcp-bench/requirements.txt` with `python -m venv` + `pip`). The repo-root `.venv` is reserved for the fresh-impl code under `src/`.
+> - **Credentials:** single `.env` at the **repo root** (three paths up from `mcp-bench/`). Carries `AZURE_OPENAI_API_KEY`, `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_API_VERSION`, optionally `AZURE_JUDGE_DEPLOYMENT` / `AZURE_AGENT_DEPLOYMENT`. Loaded into the shell with `set -a && source .env && set +a`.
+> - **Run the Phase 1 smoke:**
+>
+>   ```bash
+>   cd "<repo-root>/cemcpsec-C1F2/Performance Evaluation/mcp-bench"
+>   source .venv/bin/activate
+>   set -a && source ../../../.env && set +a
+>   python3 global_runner.py \
+>       --tasks-file tasks/mcpbench_tasks_single_runner_format.json \
+>       --servers "Math MCP" \
+>       --models gpt-4.1-mini \
+>       --task-limit 1 \
+>       --output-dir ./results/smoke
+>   ```
+>
+> - **First-time install** (only if `mcp-bench/.venv` doesn't exist yet): see [`../../docs/development.md`](../../docs/development.md) — covers the venv build, Math MCP `npm install && npm run build`, Unit Converter `uv sync`, and the empty `mcp_servers/api_key` stub.
 
 ## Overview
 
