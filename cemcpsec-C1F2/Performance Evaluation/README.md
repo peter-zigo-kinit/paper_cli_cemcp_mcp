@@ -1,5 +1,9 @@
 # MCP-Bench with Code Execution Agent
 
+> **⚠️ This bundle is vendored as the starting point for the calibration in the parent repo.**
+> For our actual setup (Azure OpenAI pin, repo-root `.env`, per-project venv layout, smoke-run instructions), see [`../../docs/development.md`](../../docs/development.md).
+> The Installation section below describes the authors' original setup, which we deliberately diverge from per ADR-0002 ([`../../docs/adr/0002-azure-pin-and-judge-config.md`](../../docs/adr/0002-azure-pin-and-judge-config.md)).
+
 ## Overview
 
 This repository extends the original **MCP-Bench** framework with a novel **Code Execution Agent** that uses dynamic tool discovery, code generation, and execution to solve complex tasks. The framework now supports comprehensive evaluation comparing both traditional MCP agents and code execution agents across multiple dimensions, including task performance, token usage, execution time, number of turns, and more.
