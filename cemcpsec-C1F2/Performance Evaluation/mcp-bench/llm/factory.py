@@ -133,7 +133,15 @@ class LLMFactory:
                 endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
                 deployment_name="gpt-4o-mini"
             )
-            
+
+            configs["gpt-4.1-mini"] = ModelConfig(
+                name="gpt-4.1-mini",
+                provider_type="azure",
+                api_key=os.getenv("AZURE_OPENAI_API_KEY"),
+                endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
+                deployment_name="gpt-4.1-mini"
+            )
+
             configs["o3"] = ModelConfig(
                 name="o3",
                 provider_type="azure",
