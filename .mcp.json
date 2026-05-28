@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "paper_search": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--directory",
+        "./tools/paper-search-mcp",
+        "-m",
+        "paper_search_mcp.server"
+      ],
+      "env": {
+        "SEMANTIC_SCHOLAR_API_KEY": ""
+      }
+    }
+  }
+}
