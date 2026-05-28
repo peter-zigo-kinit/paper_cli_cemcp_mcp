@@ -3,8 +3,9 @@
 .env.*
 !.env.example
 
-# Python
+# Python — fresh-impl venv lives at repo root; vendored venv lives next to its requirements.txt
 .venv/
+**/.venv/
 __pycache__/
 *.pyc
 
@@ -18,4 +19,3 @@ cemcpsec-C1F2/Performance Evaluation/mcp-bench/cache/*.db-shm
 cemcpsec-C1F2/Performance Evaluation/mcp-bench/cache/*.db-wal
 cemcpsec-C1F2/Performance Evaluation/mcp-bench/mcp_servers/math-mcp/build/
 cemcpsec-C1F2/Performance Evaluation/mcp-bench/mcp_servers/unit-converter-mcp/uv.lock
-cemcpsec-C1F2/Performance Evaluation/mcp-bench/mcp_servers/unit-converter-mcp/.venv/
