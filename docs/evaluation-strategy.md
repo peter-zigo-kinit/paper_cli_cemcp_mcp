@@ -111,9 +111,18 @@ The vendored harness writes raw scores to CSV. Need:
 
 Currently latency is recorded per task (wall-clock). Need explicit P50/P95 columns in the output schema; trivial post-processing.
 
-### 5.5 Judge model pinning **[settled]**
+### 5.5 Judge model — two-pairing setup **[settled]**
 
-Per `docs/adr/0002-azure-pin-and-judge-config.md`. Judge model = Azure OpenAI deployment we control; not the same as Felendler et al.'s 3× GPT-4o averaging, but pinned for within-study consistency. The replication of CE-MCP will be **direction-and-magnitude**, not point-estimate parity.
+Per `docs/adr/0003-two-pairing-judge-and-agent-models.md` (which partially supersedes ADR-0002).
+
+| Pairing | Agent | Judge | Role |
+|---|---|---|---|
+| `paper` | gpt-4.1-mini | gpt-4o | Replication of CE-MCP (2602.15945) direction/magnitude on the same harness |
+| `dev` | gpt-5-mini | gpt-5 | Headline three-cell comparison at the frontier |
+
+Both pairings keep agent ≠ judge (no same-model bias on `paper`; reduced same-family bias on `dev`). 1 judge × 5 shuffles substitutes for Felendler's 3 judges × 1 prompt — defended by MCP-Bench Table 7's shuffle-validation evidence. Absolute scores are not comparable across pairings; *direction of cell ranking* is.
+
+A small runner wrapper is needed to translate `--pairing paper|dev` into the `AZURE_AGENT_DEPLOYMENT` / `AZURE_JUDGE_DEPLOYMENT` env vars the vendored harness actually reads — the per-pairing definitions in `.env` (`JUDGE_PAPER_MODEL`, `AGENT_PAPER_MODEL`, `JUDGE_DEV_MODEL`, `AGENT_DEV_MODEL`) are currently dead until the wrapper exists. See ADR-0003 §Decision step 2.
 
 ### 5.6 LangChain / Pydantic reimplementation **[deferred]**
 
@@ -144,9 +153,10 @@ Items in `paper_draft/draft_paper.md` that need to be updated when we revise:
 | Draft section | Current text | Needs to become |
 |---|---|---|
 | §1.4 C1, §5.2 | "MCP-Universe primary, MCP-Bench secondary" | MCP-Bench primary; MCP-Universe as follow-up |
+| §5.3 Model-capability tiers | Three tiers (frontier / mid / local-GPU) | Two pairings (`paper` = gpt-4.1-mini + gpt-4o; `dev` = gpt-5-mini + gpt-5) per ADR-0003. Local-GPU tier → future work. |
 | §5.5 Metrics | *"Task accuracy: binary, execution-based (MCP-Universe evaluators); **never LLM-as-judge**."* | LLM-as-judge via MCP-Bench framework as primary; binary execution-based scores from MCP-Universe added as supplementary validation table |
 | §5.6 Implementation-parity protocol | "All three cells use community-standard tooling." | Add distractor-asymmetry resolution (point 9 in the list) |
-| §6 Threats | "LLM-as-judge fluency bias — avoided entirely; MCP-Universe execution-based evaluators only" | Replace with: judge-bias mitigated by prompt-shuffling per MCP-Bench Table 7; absolute judge scores not comparable cross-study, within-study cell ranking is the actual claim |
+| §6 Threats | "LLM-as-judge fluency bias — avoided entirely; MCP-Universe execution-based evaluators only" | Replace with: judge-bias mitigated by prompt-shuffling per MCP-Bench Table 7; absolute judge scores not comparable cross-study, within-study cell ranking is the actual claim. Add residual same-family bias note for the `dev` pairing. |
 
 I have **not** made these edits to `draft_paper.md` yet. That should be a separate explicit pass.
 
@@ -154,9 +164,10 @@ I have **not** made these edits to `draft_paper.md` yet. That should be a separa
 
 ## 7. Open questions to settle before headline experiments
 
-1. **Judge model.** Pinned per ADR-0002 to Azure deployment. Is the specific model GPT-4o-class to match Felendler et al., or do we accept a divergence and report it as a methodology note?
+1. ~~**Judge model.**~~ **[settled]** per ADR-0003 — two pairings: `paper` (gpt-4.1-mini + gpt-4o) and `dev` (gpt-5-mini + gpt-5). See §5.5.
 2. **Repeat count R.** R=3 is in [[draft_paper]]; is that defensible for budget, or do we need R=5?
 3. **Task-corpus regeneration.** Use the 19 shipped combinations or regenerate to the paper's 104? (Regeneration costs LLM time + human-review time; the shipped corpus is likely a subset known to be representative.)
 4. **CLI-wrapper choice.** Smithery CLI or `mcptools`? Smithery has a richer ecosystem; `mcptools` has thinner overhead. The implementation-parity protocol leans toward whichever gives the most CLI-idiomatic surface — likely Smithery.
+5. **Runner wrapper for the two-pairing env-var mapping.** ADR-0003 commits to a small wrapper that translates `--pairing paper|dev` into `AZURE_AGENT_DEPLOYMENT` / `AZURE_JUDGE_DEPLOYMENT`. Likely lives at `tools/run-mcp-bench.sh` or similar. Until it exists, the `.env` per-pairing entries are dead.
 
 Related: [[mcp-bench]], [[ce-mcp]], [[mcp-universe]], [[mcp-bench-vendored-harness]], [[draft_paper]], `docs/adr/0001-headline-framing-and-incremental-build.md`, `docs/adr/0002-azure-pin-and-judge-config.md`.
