@@ -128,6 +128,20 @@ class GlobalRunner:
             'completed_combinations': 0,
             'failed_combinations': 0
         }
+
+    def _get_task_id(self, task_info: Dict[str, Any]) -> str:
+        """Return task_id from either flat or grouped task-file records."""
+        task_id = task_info.get('task_id')
+        if task_id:
+            return str(task_id)
+
+        task_data = task_info.get('task') or task_info.get('task_data') or {}
+        if isinstance(task_data, dict):
+            task_id = task_data.get('task_id')
+            if task_id:
+                return str(task_id)
+
+        return 'unknown'
     
     async def load_tasks(self) -> List[Dict[str, Any]]:
         """Load tasks from file."""
@@ -492,7 +506,7 @@ class GlobalRunner:
             }
             
             return {
-                'task_id': task_info.get('task_id', 'unknown'),
+                'task_id': self._get_task_id(task_info),
                 'server_name': task_info.get('server_name', 'unknown'),
                 'model_name': model_name,
                 'status': 'completed',
@@ -507,7 +521,7 @@ class GlobalRunner:
             import traceback
             logger.error(traceback.format_exc())
             return {
-                'task_id': task_info.get('task_id', 'unknown'),
+                'task_id': self._get_task_id(task_info),
                 'server_name': task_info.get('server_name', 'unknown'),
                 'model_name': model_name,
                 'status': 'failed',
@@ -608,7 +622,7 @@ class GlobalRunner:
             }
             
             return {
-                'task_id': task_info.get('task_id', 'unknown'),
+                'task_id': self._get_task_id(task_info),
                 'server_name': task_info.get('server_name', 'unknown'),
                 'model_name': model_name,
                 'status': 'completed',
@@ -627,7 +641,7 @@ class GlobalRunner:
             import traceback
             logger.error(traceback.format_exc())
             return {
-                'task_id': task_info.get('task_id', 'unknown'),
+                'task_id': self._get_task_id(task_info),
                 'server_name': task_info.get('server_name', 'unknown'),
                 'model_name': model_name,
                 'status': 'failed',
@@ -760,7 +774,7 @@ class GlobalRunner:
             logger.error(traceback.format_exc())
             
             return {
-                'task_id': task_info.get('task_id', 'unknown'),
+                'task_id': self._get_task_id(task_info),
                 'server_name': task_info.get('server_name', 'unknown'),
                 'model_name': model_name,
                 'agent_type': agent_type,
@@ -855,7 +869,7 @@ class GlobalRunner:
                                 
                                 # Record error
                                 error_result = {
-                                    'task_id': task_info.get('task_id', 'unknown'),
+                                    'task_id': self._get_task_id(task_info),
                                     'server_name': server_name,
                                     'model_name': model_name,
                                     'agent_type': agent_type,
@@ -877,7 +891,7 @@ class GlobalRunner:
     def _save_result(self, result: Dict[str, Any], task_info: Dict[str, Any]) -> None:
         """Save result to CSV and JSON."""
         try:
-            task_id = result.get('task_id', task_info.get('task_id', 'unknown'))
+            task_id = result.get('task_id') or self._get_task_id(task_info)
             server_name = result.get('server_name', task_info.get('server_name', 'unknown'))
             model_name = result.get('model_name', 'unknown')
             agent_type = result.get('agent_type', 'unknown')
@@ -994,7 +1008,8 @@ class GlobalRunner:
                     
                     # Update completed tasks count
                     for task in server_tasks:
-                        if any(r.get('task_id') == task.get('task_id') for r in self.all_results):
+                        task_id = self._get_task_id(task)
+                        if any(r.get('task_id') == task_id for r in self.all_results):
                             self.stats['completed_tasks'] += 1
                     
                 except Exception as e:
