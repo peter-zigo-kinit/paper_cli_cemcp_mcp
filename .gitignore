@@ -15,6 +15,7 @@ node_modules/
 # Vendored project runtime / build artefacts
 cemcpsec-C1F2/Performance Evaluation/mcp-bench/results/
 cemcpsec-C1F2/Performance Evaluation/mcp-bench/logs/
+cemcpsec-C1F2/Performance Evaluation/mcp-bench/cache/*.db
 cemcpsec-C1F2/Performance Evaluation/mcp-bench/cache/*.db-shm
 cemcpsec-C1F2/Performance Evaluation/mcp-bench/cache/*.db-wal
 cemcpsec-C1F2/Performance Evaluation/mcp-bench/mcp_servers/math-mcp/build/
@@ -30,3 +31,8 @@ cemcpsec-C1F2/Performance Evaluation/mcp-bench/mcp_servers/paper-search-mcp/down
 
 # Earlier partial run kept locally for diagnosis; do not include in PR
 results/full_vendored_eval/20260529_162131/
+
+# Local repro runs and scratch checkouts
+results/repro_*/
+results/repro_*.log
+tools/paper-search-mcp/
