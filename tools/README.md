@@ -2,7 +2,7 @@
 
 External MCP servers used by Claude Code (and humans) while working on this project. These are **not** part of the MCP-bench experiment under `cemcpsec-C1F2/`, which has its own separate `mcp_servers/` checkout that the benchmark measures.
 
-Each subdirectory here is an upstream clone, gitignored. To get a fresh checkout running, clone and `uv sync` each one per the table below.
+Each subdirectory here is an upstream clone (or git submodule). After clone/checkout, run `uv sync` per the table below.
 
 | Server | Upstream | Used for |
 | --- | --- | --- |
