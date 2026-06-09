@@ -14,13 +14,37 @@ import logging
 import json
 import traceback
 from typing import List, Dict, Any, Optional
-from pathlib import Path
 
 from openai import AsyncOpenAI, AsyncAzureOpenAI
 from mcp_modules.server_manager_persistent import PersistentMultiServerManager as MultiServerManager
 from agent.dynamic_tool_discovery import DynamicToolDiscovery
 
 logger = logging.getLogger(__name__)
+
+
+def _normalize_tool_result(result: Any) -> Any:
+    """Normalize MCP tool results to plain Python data for generated code."""
+    if result is None:
+        return None
+    if isinstance(result, dict):
+        if 'data' in result and result['data'] is not None:
+            return result['data']
+        return result
+    if hasattr(result, 'structuredContent') and getattr(result, 'structuredContent', None):
+        return result.structuredContent
+    if hasattr(result, 'content') and result.content:
+        for item in result.content:
+            if hasattr(item, 'text') and item.text:
+                try:
+                    return json.loads(item.text)
+                except json.JSONDecodeError:
+                    return item.text
+    return result
+
+
+def _canonical_extract_result_data(result: Any) -> Any:
+    """Canonical helper referenced by the CE code-generation prompt."""
+    return _normalize_tool_result(result)
 
 
 class CodeExecutionTaskExecutor:
@@ -97,6 +121,17 @@ class CodeExecutionTaskExecutor:
         self.total_prompt_tokens = 0
         self.total_tokens = 0
 
+    def _discover_tools_for_prompt(self, task: str) -> Dict[str, Any]:
+        """Return tools shown to the code-generation LLM.
+
+        The connected server manager is the runtime source of truth. Static
+        discovery remains as a fallback for cases where no live tools exist.
+        """
+        live_tools = getattr(self.server_manager, 'all_tools', {}) or {}
+        dynamic_tools = self.tool_discovery.discover_tools_for_task(task, self.server_manager)
+
+        return live_tools if live_tools else dynamic_tools
+
     async def execute(self, task: str) -> Dict[str, Any]:
         """
         Execute a task by generating and running Python code.
@@ -123,7 +158,7 @@ class CodeExecutionTaskExecutor:
         
         # Discover tools dynamically based on task
         logger.info("Discovering tools dynamically for this task...")
-        self.all_tools = self.tool_discovery.discover_tools_for_task(task, self.server_manager)
+        self.all_tools = self._discover_tools_for_prompt(task)
         logger.info(f"Discovered {len(self.all_tools)} tools for task")
         
         # Build tools context for code generation
@@ -334,8 +369,24 @@ TECHNICAL REQUIREMENTS:
 7. reasoned_answer MUST be a non-empty string - never None or empty
 8. DO NOT call main() or use await at top level - just define the function
 
-REQUIRED HELPER FUNCTION (Copy this into your code):
+REQUIRED HELPER FUNCTION (already available in the execution environment as extract_result_data; do not redefine it unless necessary):
 
+def extract_result_data(result):
+    if result is None:
+        return None
+    if isinstance(result, dict):
+        return result.get('data', result)
+    if hasattr(result, 'structuredContent') and result.structuredContent:
+        return result.structuredContent
+    if hasattr(result, 'content') and result.content:
+        for item in result.content:
+            if hasattr(item, 'text') and item.text:
+                try:
+                    import json as _json
+                    return _json.loads(item.text)
+                except Exception:
+                    return item.text
+    return result
 
 CRITICAL REMINDERS:
 - Your PRIMARY GOAL is to answer the query - everything else is secondary
@@ -715,7 +766,9 @@ Generate Python code to answer the query. Return a JSON object with:
             
             # Remove any top-level await statements (they cause syntax errors)
             # The code should only define functions, we'll call them ourselves
-            cleaned_code = self._remove_top_level_await(code)
+            cleaned_code = self._strip_generated_extract_result_data(
+                self._remove_top_level_await(code)
+            )
             
             # Create a namespace for code execution
             # IMPORTANT: Add json to namespace since generated code uses it
@@ -723,7 +776,8 @@ Generate Python code to answer the query. Return a JSON object with:
             exec_namespace = {
                 'server_manager': self.server_manager,
                 'asyncio': asyncio,
-                'json': json_module,  # Add json module so extract_result_data can use it
+                'json': json_module,
+                'extract_result_data': _canonical_extract_result_data,
                 '__builtins__': __builtins__
             }
             
@@ -736,8 +790,6 @@ Generate Python code to answer the query. Return a JSON object with:
                     'output': '',
                     'complete': False
                 }
-            
-            logger.info(f"✓ Execution namespace ready with server_manager (type: {type(exec_namespace['server_manager'])})")
             
             # Execute the code (it should define async def main())
             try:
@@ -775,95 +827,35 @@ Generate Python code to answer the query. Return a JSON object with:
             old_stdout = sys.stdout
             sys.stdout = captured_output = io.StringIO()
             
-            # Wrap server_manager.call_tool to add logging AND verify server_manager state
+            # Wrap server_manager.call_tool to track calls and normalize results
             original_call_tool = self.server_manager.call_tool
             
             async def logged_call_tool(tool_name, parameters, use_cache=True):
-                """Wrapper to log tool calls and results"""
-                # Get server name for the tool
+                """Track tool calls and normalize MCP results for generated code."""
                 server_name = None
                 tool_info = self.server_manager.all_tools.get(tool_name) if hasattr(self.server_manager, 'all_tools') else None
                 if tool_info:
                     server_name = tool_info.get('server')
-                
-                # Track this tool call
+
                 tool_call_info = {
                     'tool': tool_name,
                     'server': server_name,
                     'parameters': parameters.copy() if parameters else {},
                     'turn': turn
                 }
-                
-                # Verify server_manager state before calling
-                print(f"\n{'='*80}")
-                print(f"TOOL CALL: {tool_name}")
-                print(f"PARAMETERS: {json.dumps(parameters, indent=2)}")
-                print(f"Server Manager ID: {id(self.server_manager)}")
-                print(f"Server Manager type: {type(self.server_manager)}")
-                if hasattr(self.server_manager, 'sessions'):
-                    print(f"Active sessions: {list(self.server_manager.sessions.keys()) if self.server_manager.sessions else 'None'}")
-                    session_count = len(self.server_manager.sessions) if self.server_manager.sessions else 0
-                    print(f"Session count: {session_count}")
-                    # Verify session for the tool's server
-                    if tool_info:
-                        if server_name and self.server_manager.sessions:
-                            session = self.server_manager.sessions.get(server_name)
-                            print(f"Session for {server_name}: {'EXISTS' if session else 'MISSING'}")
-                            if session:
-                                print(f"  Session type: {type(session)}")
-                                print(f"  Session ID: {id(session)}")
-                print(f"{'='*80}")
+
                 try:
-                    result = await original_call_tool(tool_name, parameters, use_cache)
-                    
-                    # Mark tool call as successful
+                    raw_result = await original_call_tool(tool_name, parameters, use_cache)
+                    result = _normalize_tool_result(raw_result)
                     tool_call_info['success'] = True
                     self.tool_calls.append(tool_call_info)
-                    print(f"\n{'='*80}")
-                    print(f"TOOL RESULT for {tool_name}:")
-                    print(f"Type: {type(result)}")
-                    if hasattr(result, '__dict__'):
-                        print(f"Attributes: {list(result.__dict__.keys())}")
-                        if hasattr(result, 'content') and result.content:
-                            print(f"Content items count: {len(result.content)}")
-                            for i, item in enumerate(result.content[:3]):  # First 3 items
-                                if hasattr(item, 'text'):
-                                    print(f"  Content[{i}].text (first 500 chars): {item.text[:500]}")
-                                elif isinstance(item, dict):
-                                    print(f"  Content[{i}] (dict): {str(item)[:500]}")
-                                else:
-                                    print(f"  Content[{i}]: {str(item)[:500]}")
-                    elif isinstance(result, dict):
-                        print(f"Dict keys: {list(result.keys())}")
-                        print(f"Dict content (first 1000 chars): {json.dumps(result, indent=2)[:1000]}")
-                    elif isinstance(result, str):
-                        print(f"String length: {len(result)}")
-                        print(f"String preview (first 500 chars): {result[:500]}")
-                    else:
-                        print(f"Result (first 500 chars): {str(result)[:500]}")
-                    print(f"{'='*80}\n")
                     return result
                 except Exception as e:
-                    # Mark tool call as failed
                     tool_call_info['success'] = False
                     tool_call_info['error'] = str(e)
                     self.tool_calls.append(tool_call_info)
-                    
-                    print(f"\n{'='*80}")
-                    print(f"TOOL CALL ERROR for {tool_name}: {type(e).__name__}: {e}")
-                    import traceback
-                    print(f"Traceback:\n{traceback.format_exc()}")
-                    print(f"{'='*80}\n")
                     raise
-            
-            # Verify server_manager in namespace matches our self.server_manager
-            namespace_sm = exec_namespace['server_manager']
-            if id(namespace_sm) != id(self.server_manager):
-                logger.error(f"❌ SERVER_MANAGER ID MISMATCH! Namespace: {id(namespace_sm)}, Self: {id(self.server_manager)}")
-                logger.error("This means a different server_manager instance is in the namespace!")
-            else:
-                logger.info(f"✓ Server manager ID matches: {id(namespace_sm)}")
-            
+
             # Replace server_manager.call_tool in the namespace with logged version
             exec_namespace['server_manager'].call_tool = logged_call_tool
             
@@ -920,6 +912,18 @@ Generate Python code to answer the query. Return a JSON object with:
                 'complete': False
             }
     
+    def _strip_generated_extract_result_data(self, code: str) -> str:
+        """Remove LLM-defined extract_result_data so the executor-provided helper is used."""
+        import re
+        stripped = re.sub(
+            r"^\s*def extract_result_data\s*\([^)]*\):.*?(?=^\s*(?:async\s+def|def\s+\w+|class\s+|\S))",
+            "    # extract_result_data is provided by the execution environment\n\n",
+            code,
+            count=1,
+            flags=re.MULTILINE | re.DOTALL,
+        )
+        return stripped
+
     def _remove_top_level_await(self, code: str) -> str:
         """Remove top-level await statements and function calls that cause syntax errors."""
         lines = code.split('\n')

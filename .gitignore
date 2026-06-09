@@ -15,7 +15,22 @@ node_modules/
 # Vendored project runtime / build artefacts
 cemcpsec-C1F2/Performance Evaluation/mcp-bench/results/
 cemcpsec-C1F2/Performance Evaluation/mcp-bench/logs/
-cemcpsec-C1F2/Performance Evaluation/mcp-bench/cache/*.db-shm
-cemcpsec-C1F2/Performance Evaluation/mcp-bench/cache/*.db-wal
-cemcpsec-C1F2/Performance Evaluation/mcp-bench/mcp_servers/math-mcp/build/
+cemcpsec-C1F2/Performance Evaluation/mcp-bench/cache/
 cemcpsec-C1F2/Performance Evaluation/mcp-bench/mcp_servers/unit-converter-mcp/uv.lock
+
+# Repo-root evaluation outputs (global_runner, repro scripts)
+results/
+results/**/*.csv
+results/**/*.json
+results/**/*.log
+
+# MCP server build / package artefacts
+cemcpsec-C1F2/Performance Evaluation/mcp-bench/mcp_servers/**/build/
+cemcpsec-C1F2/Performance Evaluation/mcp-bench/mcp_servers/**/dist/
+cemcpsec-C1F2/Performance Evaluation/mcp-bench/mcp_servers/**/*.egg-info/
+
+# MCP server runtime downloads (e.g. paper-search PDFs)
+cemcpsec-C1F2/Performance Evaluation/mcp-bench/mcp_servers/**/downloads/
+
+# Cursor debug session logs
+.cursor/debug-*.log
