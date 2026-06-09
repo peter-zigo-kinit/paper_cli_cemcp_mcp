@@ -1,0 +1,18 @@
+{
+  "timestamp": "20260601_142646",
+  "repo_sha": "777dff7e9f8227264eba58141ef44b0f701840f8",
+  "vendored_subtree_sha": "777dff7e9f8227264eba58141ef44b0f701840f8",
+  "model": "gpt-4.1-mini",
+  "azure_agent_deployment": "gpt-4.1-mini",
+  "azure_judge_deployment": "gpt-4.1-mini",
+  "task_files": {
+    "single": "tasks/mcpbench_tasks_single_runner_format.json",
+    "multi2": "tasks/mcpbench_tasks_multi_2server_runner_format.json",
+    "multi3": "tasks/mcpbench_tasks_multi_3server_runner_format.json"
+  },
+  "exit_codes": {
+    "single": 0,
+    "multi2": 0,
+    "multi3": 0
+  }
+}

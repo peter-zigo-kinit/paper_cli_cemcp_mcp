@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-06-01T16:13:45.234366",
+  "elapsed_time_seconds": 6417.403924226761,
+  "statistics": {
+    "total_tasks": 18,
+    "completed_tasks": 0,
+    "failed_tasks": 0,
+    "total_combinations": 36,
+    "completed_combinations": 36,
+    "failed_combinations": 0
+  },
+  "errors": [],
+  "output_files": {
+    "csv": "/home/peter/organizations/paper_cli_mcp_cemcp/results/full_vendored_eval/20260601_142646/single/global_evaluation_20260601_142647.csv",
+    "json": "/home/peter/organizations/paper_cli_mcp_cemcp/results/full_vendored_eval/20260601_142646/single/global_evaluation_20260601_142647.json"
+  },
+  "success_rate": 1.0
+}
