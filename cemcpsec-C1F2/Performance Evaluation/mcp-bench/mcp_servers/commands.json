@@ -8,7 +8,7 @@
     "cmd": "uv run python -m unit_converter_mcp",
     "env": [],
     "cwd": "../unit-converter-mcp",
-    "notes": "CE code-mode follow-up (#14): propagate MCP outputSchema into the codegen prompt after result normalization. Server: replace -> dict with Pydantic/dataclass return types so FastMCP publishes real schemas (see gofastmcp.com/servers/tools#output-schemas). Harness: store output_schema in connector.py and include it in format_tools_for_prompt(). Today list_tools() returns additionalProperties:true only."
+    "notes": "Output schema follow-up (#16): propagate MCP outputSchema into the codegen prompt after result normalization. Server: replace -> dict with Pydantic/dataclass return types so FastMCP publishes real schemas (see gofastmcp.com/servers/tools#output-schemas). Harness: store output_schema in connector.py and include it in format_tools_for_prompt(). Today list_tools() returns additionalProperties:true only."
   },
   "Wikipedia": {
     "cmd": "uv run python -m wikipedia_mcp",

@@ -24,6 +24,10 @@ _Avoid_: "Code Execution Agent" (vendored project's label — drop the "agent" s
 How tool definitions and invocations reach the model. Two values in this project: MCP JSON-RPC schemas vs CLI help text / subcommands.
 _Avoid_: "tool interface" (ambiguous with "tool calling format"), "representation" alone.
 
+**Tool output schema**:
+The MCP `outputSchema` for a tool — the declared shape of structured tool results. For MCP-client and CE-MCP, it is propagated from `list_tools()` into the prompt alongside input schema so both cells see the same tool contract before acting. No harness-side fallback or registry in the current plan; the server must publish a correct schema.
+_Avoid_: "response format" alone (ambiguous with free-text tool content), "output type" (implementation detail).
+
 **Orchestration locus**:
 Where tool calls are sequenced. Two values: in-context (ReAct loop in model context) vs sandbox (model emits one program, sandbox executes the call sequence, only the final result returns).
 _Avoid_: "execution model", "execution mode" — both used inconsistently in the vendored project.
