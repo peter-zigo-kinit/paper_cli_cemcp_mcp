@@ -8,7 +8,7 @@
     "cmd": "uv run python -m unit_converter_mcp",
     "env": [],
     "cwd": "../unit-converter-mcp",
-    "notes": "Output schema follow-up (#16): propagate MCP outputSchema into the codegen prompt after result normalization. Server: replace -> dict with Pydantic/dataclass return types so FastMCP publishes real schemas (see gofastmcp.com/servers/tools#output-schemas). Harness: store output_schema in connector.py and include it in format_tools_for_prompt(). Today list_tools() returns additionalProperties:true only."
+    "notes": "Typed outputSchema on all 16 tools (schemas.py + Pydantic returns). Harness stores output_schema and includes Output Schema in MCP-client + CE-MCP prompts (connector.py). Verify: unit-converter-mcp/tests/test_output_schemas.py, mcp-bench/tests/test_connector_output_schema.py, scripts/smoke_unit_converter_output_schema.sh (#16)."
   },
   "Wikipedia": {
     "cmd": "uv run python -m wikipedia_mcp",

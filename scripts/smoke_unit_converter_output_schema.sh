@@ -16,6 +16,8 @@
 #
 # Results land under results/smoke_unit_converter_output_schema/<timestamp>/
 # (gitignored). Expect two evaluation rows (MCP + CE) in the JSON/CSV output.
+# Full console log: runner.log in the same <timestamp> directory.
+# CE generated code: <task_id>_CE_generated.py in the same directory.
 
 set -euo pipefail
 
@@ -25,6 +27,7 @@ VENV_PY="${MCP_BENCH}/.venv/bin/python"
 ENV_FILE="${REPO_ROOT}/.env"
 TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
 OUTPUT_DIR="${REPO_ROOT}/results/smoke_unit_converter_output_schema/${TIMESTAMP}"
+RUNNER_LOG="${OUTPUT_DIR}/runner.log"
 
 if [[ ! -x "${VENV_PY}" ]]; then
   echo "error: harness venv not found at ${MCP_BENCH}/.venv" >&2
@@ -42,8 +45,11 @@ set -a && source "${ENV_FILE}" && set +a
 
 cd "${MCP_BENCH}"
 
+mkdir -p "${OUTPUT_DIR}"
+
 echo "==> Issue #16 smoke: Unit Converter outputSchema (MCP-client + CE-MCP)"
 echo "    output: ${OUTPUT_DIR}"
+echo "    log:    ${RUNNER_LOG}"
 echo
 
 "${VENV_PY}" global_runner.py \
@@ -52,9 +58,9 @@ echo
   --models gpt-4.1-mini \
   --task-limit 1 \
   --output-dir "${OUTPUT_DIR}" \
-  "$@"
+  "$@" 2>&1 | tee "${RUNNER_LOG}"
 
 echo
-echo "==> Done. Check ${OUTPUT_DIR} for global_evaluation_*.json"
+echo "==> Done. Check ${OUTPUT_DIR} for global_evaluation_*.json, runner.log, and *_CE_generated.py"
 echo "    Expect agent_type MCP (traditional) and CE (code_execution) rows."
 echo "    After #16: prompts should include Output Schema for convert_batch."

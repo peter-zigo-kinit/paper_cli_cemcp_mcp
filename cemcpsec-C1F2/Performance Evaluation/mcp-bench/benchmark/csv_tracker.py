@@ -9,6 +9,7 @@ Saves after each task to ensure data persistence even if the process fails.
 import os
 import logging
 import json
+import re
 from pathlib import Path
 from typing import Dict, Any, Optional
 from datetime import datetime
@@ -139,6 +140,40 @@ class CSVTracker:
                 lineterminator='\n'
             )
             writer.writerow(self.columns)
+
+    @staticmethod
+    def _safe_filename_part(value: str) -> str:
+        """Sanitize a string for use in a filename."""
+        sanitized = re.sub(r"[^\w.-]+", "_", str(value)).strip("_")
+        return sanitized or "unknown"
+
+    def _write_generated_code_file(
+        self,
+        task_id: str,
+        server: str,
+        model: str,
+        agent_type: str,
+        code: str,
+    ) -> Optional[Path]:
+        """Write CE generated code as a readable .py file in the output directory."""
+        if not code or not code.strip():
+            return None
+
+        filename = f"{self._safe_filename_part(task_id)}_{self._safe_filename_part(agent_type)}_generated.py"
+        code_path = self.output_dir / filename
+        header = (
+            f'"""\n'
+            f"Generated code from MCP-Bench evaluation.\n"
+            f"\n"
+            f"task_id: {task_id}\n"
+            f"server: {server}\n"
+            f"model: {model}\n"
+            f"agent_type: {agent_type}\n"
+            f'saved_at: {datetime.now().isoformat(timespec="seconds")}\n'
+            f'"""\n\n'
+        )
+        code_path.write_text(header + code.rstrip() + "\n", encoding="utf-8")
+        return code_path
     
     def add_task_result(
         self,
@@ -275,6 +310,22 @@ class CSVTracker:
             logger.error(f"Failed to save task result to JSON: {e}")
             import traceback
             logger.error(traceback.format_exc())
+
+        if code and str(code).strip() and agent_type == "CE":
+            try:
+                code_path = self._write_generated_code_file(
+                    task_id=task_id,
+                    server=server,
+                    model=model,
+                    agent_type=agent_type,
+                    code=str(code),
+                )
+                if code_path:
+                    logger.info(f"Saved generated code: {code_path}")
+            except Exception as e:
+                logger.error(f"Failed to save generated code file: {e}")
+                import traceback
+                logger.error(traceback.format_exc())
     
     def get_dataframe(self):
         """Get the current DataFrame (if pandas available) or None."""
