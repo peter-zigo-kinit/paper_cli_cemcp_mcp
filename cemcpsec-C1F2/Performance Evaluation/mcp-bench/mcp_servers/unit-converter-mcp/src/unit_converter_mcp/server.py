@@ -5,6 +5,13 @@ from typing import Annotated, Literal, get_args
 from fastmcp import FastMCP
 from pydantic import Field
 
+from .schemas import (
+    BatchConversionResult,
+    BatchItemResult,
+    BatchSummary,
+    ConversionResult,
+    SupportedUnitsResponse,
+)
 from .tools import (
     ANGLE_UNIT,
     AREA_UNIT,
@@ -64,16 +71,16 @@ def convert_temperature(
     value: Annotated[float, Field(description="Temperature value to convert")],
     from_unit: Annotated[TEMPERATURE_UNIT, Field(description="Source unit")],
     to_unit: Annotated[TEMPERATURE_UNIT, Field(description="Target unit")],
-) -> dict:
+) -> ConversionResult:
     """Convert temperature between units."""
     converted_value = convert_temperature_tool(value, from_unit, to_unit)
-    return {
-        "original_value": value,
-        "original_unit": from_unit,
-        "converted_value": converted_value,
-        "converted_unit": to_unit,
-        "conversion_type": "temperature",
-    }
+    return ConversionResult(
+        original_value=value,
+        original_unit=from_unit,
+        converted_value=converted_value,
+        converted_unit=to_unit,
+        conversion_type="temperature",
+    )
 
 
 @app.tool()
@@ -81,16 +88,16 @@ def convert_angle(
     value: Annotated[float, Field(description="Angle value to convert")],
     from_unit: Annotated[ANGLE_UNIT, Field(description="Source unit")],
     to_unit: Annotated[ANGLE_UNIT, Field(description="Target unit")],
-) -> dict:
+) -> ConversionResult:
     """Convert angle between units."""
     converted_value = convert_angle_tool(value, from_unit, to_unit)
-    return {
-        "original_value": value,
-        "original_unit": from_unit,
-        "converted_value": converted_value,
-        "converted_unit": to_unit,
-        "conversion_type": "angle",
-    }
+    return ConversionResult(
+        original_value=value,
+        original_unit=from_unit,
+        converted_value=converted_value,
+        converted_unit=to_unit,
+        conversion_type="angle",
+    )
 
 
 @app.tool()
@@ -98,16 +105,16 @@ def convert_length(
     value: Annotated[float, Field(description="Length value to convert")],
     from_unit: Annotated[LENGTH_UNIT, Field(description="Source unit")],
     to_unit: Annotated[LENGTH_UNIT, Field(description="Target unit")],
-) -> dict:
+) -> ConversionResult:
     """Convert length between units."""
     converted_value = convert_length_tool(value, from_unit, to_unit)
-    return {
-        "original_value": value,
-        "original_unit": from_unit,
-        "converted_value": converted_value,
-        "converted_unit": to_unit,
-        "conversion_type": "length",
-    }
+    return ConversionResult(
+        original_value=value,
+        original_unit=from_unit,
+        converted_value=converted_value,
+        converted_unit=to_unit,
+        conversion_type="length",
+    )
 
 
 @app.tool()
@@ -115,16 +122,16 @@ def convert_energy(
     value: Annotated[float, Field(description="Energy value to convert")],
     from_unit: Annotated[ENERGY_UNIT, Field(description="Source unit")],
     to_unit: Annotated[ENERGY_UNIT, Field(description="Target unit")],
-) -> dict:
+) -> ConversionResult:
     """Convert energy between units."""
     converted_value = convert_energy_tool(value, from_unit, to_unit)
-    return {
-        "original_value": value,
-        "original_unit": from_unit,
-        "converted_value": converted_value,
-        "converted_unit": to_unit,
-        "conversion_type": "energy",
-    }
+    return ConversionResult(
+        original_value=value,
+        original_unit=from_unit,
+        converted_value=converted_value,
+        converted_unit=to_unit,
+        conversion_type="energy",
+    )
 
 
 @app.tool()
@@ -132,16 +139,16 @@ def convert_force(
     value: Annotated[float, Field(description="Force value to convert")],
     from_unit: Annotated[FORCE_UNIT, Field(description="Source unit")],
     to_unit: Annotated[FORCE_UNIT, Field(description="Target unit")],
-) -> dict:
+) -> ConversionResult:
     """Convert force between units."""
     converted_value = convert_force_tool(value, from_unit, to_unit)
-    return {
-        "original_value": value,
-        "original_unit": from_unit,
-        "converted_value": converted_value,
-        "converted_unit": to_unit,
-        "conversion_type": "force",
-    }
+    return ConversionResult(
+        original_value=value,
+        original_unit=from_unit,
+        converted_value=converted_value,
+        converted_unit=to_unit,
+        conversion_type="force",
+    )
 
 
 @app.tool()
@@ -149,16 +156,16 @@ def convert_pressure(
     value: Annotated[float, Field(description="Pressure value to convert")],
     from_unit: Annotated[PRESSURE_UNIT, Field(description="Source unit")],
     to_unit: Annotated[PRESSURE_UNIT, Field(description="Target unit")],
-) -> dict:
+) -> ConversionResult:
     """Convert pressure between units."""
     converted_value = convert_pressure_tool(value, from_unit, to_unit)
-    return {
-        "original_value": value,
-        "original_unit": from_unit,
-        "converted_value": converted_value,
-        "converted_unit": to_unit,
-        "conversion_type": "pressure",
-    }
+    return ConversionResult(
+        original_value=value,
+        original_unit=from_unit,
+        converted_value=converted_value,
+        converted_unit=to_unit,
+        conversion_type="pressure",
+    )
 
 
 @app.tool()
@@ -166,16 +173,16 @@ def convert_power(
     value: Annotated[float, Field(description="Power value to convert")],
     from_unit: Annotated[POWER_UNIT, Field(description="Source unit")],
     to_unit: Annotated[POWER_UNIT, Field(description="Target unit")],
-) -> dict:
+) -> ConversionResult:
     """Convert power between units."""
     converted_value = convert_power_tool(value, from_unit, to_unit)
-    return {
-        "original_value": value,
-        "original_unit": from_unit,
-        "converted_value": converted_value,
-        "converted_unit": to_unit,
-        "conversion_type": "power",
-    }
+    return ConversionResult(
+        original_value=value,
+        original_unit=from_unit,
+        converted_value=converted_value,
+        converted_unit=to_unit,
+        conversion_type="power",
+    )
 
 
 @app.tool()
@@ -183,16 +190,16 @@ def convert_speed(
     value: Annotated[float, Field(description="Speed value to convert")],
     from_unit: Annotated[SPEED_UNIT, Field(description="Source unit")],
     to_unit: Annotated[SPEED_UNIT, Field(description="Target unit")],
-) -> dict:
+) -> ConversionResult:
     """Convert speed between units."""
     converted_value = convert_speed_tool(value, from_unit, to_unit)
-    return {
-        "original_value": value,
-        "original_unit": from_unit,
-        "converted_value": converted_value,
-        "converted_unit": to_unit,
-        "conversion_type": "speed",
-    }
+    return ConversionResult(
+        original_value=value,
+        original_unit=from_unit,
+        converted_value=converted_value,
+        converted_unit=to_unit,
+        conversion_type="speed",
+    )
 
 
 @app.tool()
@@ -200,16 +207,16 @@ def convert_area(
     value: Annotated[float, Field(description="Area value to convert")],
     from_unit: Annotated[AREA_UNIT, Field(description="Source unit")],
     to_unit: Annotated[AREA_UNIT, Field(description="Target unit")],
-) -> dict:
+) -> ConversionResult:
     """Convert area between units."""
     converted_value = convert_area_tool(value, from_unit, to_unit)
-    return {
-        "original_value": value,
-        "original_unit": from_unit,
-        "converted_value": converted_value,
-        "converted_unit": to_unit,
-        "conversion_type": "area",
-    }
+    return ConversionResult(
+        original_value=value,
+        original_unit=from_unit,
+        converted_value=converted_value,
+        converted_unit=to_unit,
+        conversion_type="area",
+    )
 
 
 @app.tool()
@@ -217,16 +224,16 @@ def convert_mass(
     value: Annotated[float, Field(description="Weight value to convert")],
     from_unit: Annotated[MASS_UNIT, Field(description="Source unit")],
     to_unit: Annotated[MASS_UNIT, Field(description="Target unit")],
-) -> dict:
+) -> ConversionResult:
     """Convert weight between units."""
     converted_value = convert_mass_tool(value, from_unit, to_unit)
-    return {
-        "original_value": value,
-        "original_unit": from_unit,
-        "converted_value": converted_value,
-        "converted_unit": to_unit,
-        "conversion_type": "mass",
-    }
+    return ConversionResult(
+        original_value=value,
+        original_unit=from_unit,
+        converted_value=converted_value,
+        converted_unit=to_unit,
+        conversion_type="mass",
+    )
 
 
 @app.tool()
@@ -234,16 +241,16 @@ def convert_volume(
     value: Annotated[float, Field(description="Volume value to convert")],
     from_unit: Annotated[VOLUME_UNIT, Field(description="Source unit")],
     to_unit: Annotated[VOLUME_UNIT, Field(description="Target unit")],
-) -> dict:
+) -> ConversionResult:
     """Convert volume between units."""
     converted_value = convert_volume_tool(value, from_unit, to_unit)
-    return {
-        "original_value": value,
-        "original_unit": from_unit,
-        "converted_value": converted_value,
-        "converted_unit": to_unit,
-        "conversion_type": "volume",
-    }
+    return ConversionResult(
+        original_value=value,
+        original_unit=from_unit,
+        converted_value=converted_value,
+        converted_unit=to_unit,
+        conversion_type="volume",
+    )
 
 
 @app.tool()
@@ -251,16 +258,16 @@ def convert_computer_data(
     value: Annotated[float, Field(description="Computer storage value to convert")],
     from_unit: Annotated[COMPUTER_DATA_UNIT, Field(description="Source unit")],
     to_unit: Annotated[COMPUTER_DATA_UNIT, Field(description="Target unit")],
-) -> dict:
+) -> ConversionResult:
     """Convert computer storage between units."""
     converted_value = convert_computer_data_tool(value, from_unit, to_unit)
-    return {
-        "original_value": value,
-        "original_unit": from_unit,
-        "converted_value": converted_value,
-        "converted_unit": to_unit,
-        "conversion_type": "computer_data",
-    }
+    return ConversionResult(
+        original_value=value,
+        original_unit=from_unit,
+        converted_value=converted_value,
+        converted_unit=to_unit,
+        conversion_type="computer_data",
+    )
 
 
 @app.tool()
@@ -268,16 +275,16 @@ def convert_density(
     value: Annotated[float, Field(description="Density value to convert")],
     from_unit: Annotated[DENSITY_UNIT, Field(description="Source unit")],
     to_unit: Annotated[DENSITY_UNIT, Field(description="Target unit")],
-) -> dict:
+) -> ConversionResult:
     """Convert density between units."""
     converted_value = convert_density_tool(value, from_unit, to_unit)
-    return {
-        "original_value": value,
-        "original_unit": from_unit,
-        "converted_value": converted_value,
-        "converted_unit": to_unit,
-        "conversion_type": "density",
-    }
+    return ConversionResult(
+        original_value=value,
+        original_unit=from_unit,
+        converted_value=converted_value,
+        converted_unit=to_unit,
+        conversion_type="density",
+    )
 
 
 @app.tool()
@@ -285,16 +292,16 @@ def convert_time(
     value: Annotated[float, Field(description="Time value to convert")],
     from_unit: Annotated[TIME_UNIT, Field(description="Source unit")],
     to_unit: Annotated[TIME_UNIT, Field(description="Target unit")],
-) -> dict:
+) -> ConversionResult:
     """Convert time between units."""
     converted_value = convert_time_tool(value, from_unit, to_unit)
-    return {
-        "original_value": value,
-        "original_unit": from_unit,
-        "converted_value": converted_value,
-        "converted_unit": to_unit,
-        "conversion_type": "time",
-    }
+    return ConversionResult(
+        original_value=value,
+        original_unit=from_unit,
+        converted_value=converted_value,
+        converted_unit=to_unit,
+        conversion_type="time",
+    )
 
 
 @app.tool()
@@ -305,7 +312,7 @@ def convert_batch(
             description="List of conversion requests. Each request should contain: value (float), from_unit (str), to_unit (str), conversion_type (str), and optionally request_id (str)"
         ),
     ],
-) -> dict:
+) -> BatchConversionResult:
     """Perform multiple unit conversions in a single batch request.
 
     Each request in the batch should contain:
@@ -324,14 +331,14 @@ def convert_batch(
     successful = sum(1 for result in results if result["success"])
     failed = len(results) - successful
 
-    return {
-        "batch_results": results,
-        "summary": {
-            "total_requests": len(requests),
-            "successful_conversions": successful,
-            "failed_conversions": failed,
-        },
-    }
+    return BatchConversionResult(
+        batch_results=[BatchItemResult.model_validate(result) for result in results],
+        summary=BatchSummary(
+            total_requests=len(requests),
+            successful_conversions=successful,
+            failed_conversions=failed,
+        ),
+    )
 
 
 @app.tool()
@@ -343,7 +350,7 @@ def list_supported_units(
             default=None,
         ),
     ],
-) -> dict:
+) -> SupportedUnitsResponse:
     """List all supported units for each conversion type or for a specific type."""
     all_units = {
         "angle": get_args(ANGLE_UNIT),
@@ -363,9 +370,9 @@ def list_supported_units(
     }
 
     if unit_type is not None:
-        return {unit_type: all_units[unit_type]}
+        return SupportedUnitsResponse.model_validate({unit_type: all_units[unit_type]})
 
-    return all_units
+    return SupportedUnitsResponse.model_validate(all_units)
 
 
 def main() -> None:

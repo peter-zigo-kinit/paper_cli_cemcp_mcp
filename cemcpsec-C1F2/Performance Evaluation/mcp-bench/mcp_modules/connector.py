@@ -76,13 +76,17 @@ class MCPConnector:
         server_tools = {}
         for tool in tools_response.tools:
             tool_key = f"{self.server_name}:{tool.name}"
-            server_tools[tool_key] = {
+            tool_entry = {
                 "name": tool.name,
                 "original_name": tool.name,
                 "server": self.server_name,
                 "description": tool.description,
-                "input_schema": tool.inputSchema
+                "input_schema": tool.inputSchema,
             }
+            output_schema = getattr(tool, "outputSchema", None)
+            if output_schema:
+                tool_entry["output_schema"] = output_schema
+            server_tools[tool_key] = tool_entry
         
         logger.info(f"Discovered {len(server_tools)} tools from {self.server_name}")
         # Tool descriptions commented out to reduce output
@@ -289,13 +293,17 @@ class MCPConnector:
                 
                 for tool in tools:
                     tool_key = f"{self.server_name}:{tool['name']}"
-                    server_tools[tool_key] = {
+                    tool_entry = {
                         "name": tool['name'],
                         "original_name": tool['name'],
                         "server": self.server_name,
                         "description": tool.get('description', ''),
-                        "input_schema": tool.get('inputSchema', {})
+                        "input_schema": tool.get('inputSchema', {}),
                     }
+                    output_schema = tool.get('outputSchema')
+                    if output_schema:
+                        tool_entry["output_schema"] = output_schema
+                    server_tools[tool_key] = tool_entry
                 
                 logger.info(f"Discovered {len(server_tools)} tools from HTTP server {self.server_name}")
                 # Tool descriptions commented out to reduce output
@@ -361,6 +369,9 @@ class MCPConnector:
             if info.get('input_schema'):
                 schema_str = json.dumps(info['input_schema'], indent=2)
                 formatted += f"  Input Schema:\n```json\n{schema_str}\n```\n"
+            if info.get('output_schema'):
+                schema_str = json.dumps(info['output_schema'], indent=2)
+                formatted += f"  Output Schema:\n```json\n{schema_str}\n```\n"
         return formatted
     
     @staticmethod
@@ -378,6 +389,7 @@ class MCPConnector:
             'total_tokens': 0,
             'description_tokens': 0,
             'schema_tokens': 0,
+            'output_schema_tokens': 0,
             'tool_count': len(tools),
             'per_tool_tokens': {}
         }
@@ -386,6 +398,7 @@ class MCPConnector:
             tool_tokens = 0
             description_tokens = 0
             schema_tokens = 0
+            output_schema_tokens = 0
             
             # Count tokens in description
             description = info.get('description', '')
@@ -398,6 +411,11 @@ class MCPConnector:
                 schema_str = json.dumps(info['input_schema'], indent=2)
                 schema_tokens = len(schema_str) // 4
                 tool_tokens += schema_tokens
+
+            if info.get('output_schema'):
+                schema_str = json.dumps(info['output_schema'], indent=2)
+                output_schema_tokens = len(schema_str) // 4
+                tool_tokens += output_schema_tokens
             
             # Count tokens for tool name and formatting markers
             tool_header = f"Tool: `{name}` (Server: {info.get('server', 'unknown')})"
@@ -408,11 +426,13 @@ class MCPConnector:
                 'total': tool_tokens,
                 'description': description_tokens,
                 'schema': schema_tokens,
+                'output_schema': output_schema_tokens,
                 'header': header_tokens
             }
             
             stats['total_tokens'] += tool_tokens
             stats['description_tokens'] += description_tokens
             stats['schema_tokens'] += schema_tokens
+            stats['output_schema_tokens'] += output_schema_tokens
         
         return stats
