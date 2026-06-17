@@ -1025,6 +1025,11 @@ class TaskEvaluator(BaseEvaluator):
                 "server_utilization_metrics": server_metrics,
                 "evaluation_timestamp": asyncio.get_event_loop().time()
             }
+
+            from benchmark.code_execution_results import compute_overall_score
+            overall_score = compute_overall_score(evaluation)
+            if overall_score is not None:
+                evaluation['overall_score'] = overall_score
             
             logger.info("Task evaluation completed successfully")
             return evaluation

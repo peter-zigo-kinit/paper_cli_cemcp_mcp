@@ -76,6 +76,7 @@ class CSVTracker:
             'input_schema_compliance',
             'valid_tool_name_rate',
             'execution_success_rate',
+            'overall_score',
             'avg_rounds_per_task',
             'avg_tool_calls_per_task'
         ]
@@ -242,6 +243,7 @@ class CSVTracker:
                 'input_schema_compliance': float(eval.get('input_schema_compliance', 0)) if eval.get('input_schema_compliance') is not None else 0.0,
                 'valid_tool_name_rate': float(eval.get('valid_tool_name_rate', 0)) if eval.get('valid_tool_name_rate') is not None else 0.0,
                 'execution_success_rate': float(eval.get('execution_success_rate', 0)) if eval.get('execution_success_rate') is not None else 0.0,
+                'overall_score': float(eval.get('overall_score', 0)) if eval.get('overall_score') is not None else 0.0,
                 'avg_rounds_per_task': float(eval.get('avg_rounds_per_task', 0)) if eval.get('avg_rounds_per_task') is not None else 0.0,
                 'avg_tool_calls_per_task': float(eval.get('avg_tool_calls_per_task', 0)) if eval.get('avg_tool_calls_per_task') is not None else 0.0
             }

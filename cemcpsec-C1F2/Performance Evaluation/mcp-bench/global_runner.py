@@ -24,6 +24,11 @@ project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
 from benchmark.csv_tracker import CSVTracker
+from benchmark.code_execution_results import (
+    build_code_execution_accumulated_information,
+    extract_task_eval_context,
+    tool_calls_to_execution_results,
+)
 from benchmark.evaluator import TaskEvaluator
 from benchmark.runner import ConnectionManager, BenchmarkRunner
 from agent.executor import TaskExecutor
@@ -112,6 +117,7 @@ class GlobalRunner:
         # Store config values for use in task extraction
         self.filter_problematic_tools = filter_problematic_tools
         self.use_fuzzy_descriptions = use_fuzzy_descriptions
+        self.enable_concrete_description_ref = config_loader.is_concrete_description_ref_enabled()
         
         # Initialize judge provider (will be created when needed)
         self._judge_provider = None
@@ -596,18 +602,11 @@ class GlobalRunner:
             
             execution_time = time.time() - start_time
             
-            # Extract tool calls from code executions for evaluation
-            execution_results = []
-            for code_exec in code_exec_result.get('code_executions', []):
-                exec_info = code_exec.get('execution', {})
-                if exec_info.get('success'):
-                    execution_results.append({
-                        'tool': 'code_execution',
-                        'parameters': {'code': code_exec.get('code', '')[:200]},
-                        'result': exec_info.get('output', ''),
-                        'success': True,
-                        'round_num': code_exec.get('turn', 1)
-                    })
+            # Map tracked MCP tool calls for rule-based evaluation (not synthetic code_execution stubs)
+            execution_results = tool_calls_to_execution_results(
+                code_exec_result.get('tool_calls', [])
+            )
+            accumulated_information = build_code_execution_accumulated_information(code_exec_result)
             
             # Format result for evaluation
             formatted_result = {
@@ -616,7 +615,7 @@ class GlobalRunner:
                 'total_rounds': code_exec_result.get('total_turns', 0),
                 'available_tools': server_manager.all_tools,
                 'planning_json_compliance': 1.0,
-                'accumulated_information': code_exec_result.get('solution', ''),
+                'accumulated_information': accumulated_information,
                 'total_output_tokens': code_exec_result.get('total_output_tokens', 0),
                 'total_prompt_tokens': code_exec_result.get('total_prompt_tokens', 0),
                 'total_tokens': code_exec_result.get('total_tokens', 0)
@@ -671,42 +670,34 @@ class GlobalRunner:
             
             # Get result data
             result_data = execution_result.get('result', {})
-            
-            # Extract task string - ensure it's a string, not a dict or other type
-            task_str = task_info.get('query') or task_info.get('task') or task_info.get('description') or ''
-            
-            # Handle different types
-            if isinstance(task_str, dict):
-                # If it's a dict, try to extract a string value
-                task_str = task_str.get('query') or task_str.get('task') or task_str.get('description') or ''
-            elif task_str is None:
-                task_str = ''
-            
-            # Ensure it's a string
-            if not isinstance(task_str, str):
-                task_str = str(task_str) if task_str else ''
-            
-            # If still empty, try to get from task_data if available
-            if not task_str and 'task_data' in task_info:
-                task_data = task_info.get('task_data', {})
-                if isinstance(task_data, dict):
-                    task_str = task_data.get('query') or task_data.get('task') or task_data.get('description') or ''
-                    if not isinstance(task_str, str):
-                        task_str = str(task_str) if task_str else ''
-            
-            # Final fallback
-            if not task_str:
-                task_str = 'Task evaluation'
+
+            eval_context = extract_task_eval_context(
+                task_info,
+                use_fuzzy_descriptions=self.use_fuzzy_descriptions,
+                enable_concrete_description_ref=self.enable_concrete_description_ref,
+            )
+            task_description = eval_context['task_description'] or 'Task evaluation'
+            concrete_task_description = eval_context['concrete_task_description']
+            dependency_analysis = eval_context['dependency_analysis']
             
             # Evaluate using the correct method signature
             evaluation = await evaluator.evaluate(
-                task=task_str,
+                task=task_description,
                 execution_results=result_data.get('execution_results', []),
                 final_solution=result_data.get('solution', ''),
                 total_rounds=result_data.get('total_rounds', 0),
                 available_tools=result_data.get('available_tools', {}),
                 planning_json_compliance=result_data.get('planning_json_compliance', 1.0),
-                accumulated_information=result_data.get('accumulated_information', '')
+                accumulated_information=(
+                    result_data.get('accumulated_information_uncompressed')
+                    or result_data.get('accumulated_information', '')
+                ),
+                concrete_task_description=concrete_task_description,
+                dependency_analysis=(
+                    dependency_analysis
+                    if config_loader.get_config('benchmark.enable_dependency_analysis_ref_for_eval', True)
+                    else None
+                ),
             )
             
             # Add evaluation to result
