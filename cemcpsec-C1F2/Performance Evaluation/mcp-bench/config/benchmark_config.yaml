@@ -134,7 +134,7 @@ cache:
 # Evaluation related configuration
 evaluation:
   # Judge stability test run count (averages results from multiple randomized evaluations)
-  judge_stability_runs: 2
+  judge_stability_runs: 5
 
 # LLM related configuration (excluding max_tokens as requested by user)
 llm:

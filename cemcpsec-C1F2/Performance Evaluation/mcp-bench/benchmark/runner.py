@@ -34,6 +34,10 @@ from agent.executor import TaskExecutor
 from mcp_modules.server_manager_persistent import PersistentMultiServerManager
 from llm.provider import LLMProvider
 from llm.factory import LLMFactory
+from benchmark.code_execution_results import (
+    build_code_execution_accumulated_information,
+    tool_calls_to_execution_results,
+)
 from benchmark.evaluator import TaskEvaluator
 from benchmark.results_aggregator import ResultsAggregator
 from benchmark.results_formatter import ResultsFormatter, execution_results_to_text
@@ -289,39 +293,21 @@ class BenchmarkRunner:
                 # For traditional MCP agent, get from result.total_rounds
                 num_turns = result.get('total_rounds', 0)
             
-            # Extract tools_used
+            # Extract tools_used from execution_results (same trace rule-based evaluation uses)
             tools_used = []
-            if self.agent_type == 'code_execution':
-                # For CE agent, get tool_calls from code_exec_result
-                tool_calls = execution_result.get('tool_calls', [])
-                if tool_calls:
-                    # Format tool calls for storage (list of dicts with tool, server, parameters)
-                    tools_used = [
-                        {
-                            'tool': tc.get('tool', ''),
-                            'server': tc.get('server', ''),
-                            'parameters': tc.get('parameters', {}),
-                            'turn': tc.get('turn', 0),
-                            'success': tc.get('success', False)
-                        }
-                        for tc in tool_calls
-                    ]
-            else:
-                # For traditional MCP agent, extract from execution_results
-                execution_results = result.get('execution_results', [])
-                if execution_results:
-                    # Format tool calls from execution_results
-                    tools_used = [
-                        {
-                            'tool': er.get('tool', ''),
-                            'server': er.get('server', ''),
-                            'parameters': er.get('parameters', {}),
-                            'round_num': er.get('round_num', 0),
-                            'success': er.get('success', False)
-                        }
-                        for er in execution_results
-                        if er.get('tool')  # Only include entries with tool names
-                    ]
+            execution_results = result.get('execution_results', [])
+            if execution_results:
+                tools_used = [
+                    {
+                        'tool': er.get('tool', ''),
+                        'server': er.get('server', ''),
+                        'parameters': er.get('parameters', {}),
+                        'round_num': er.get('round_num', er.get('turn', 0)),
+                        'success': er.get('success', False),
+                    }
+                    for er in execution_results
+                    if er.get('tool')
+                ]
             
             # Add to CSV tracker
             self.csv_tracker.add_task_result(
@@ -1079,23 +1065,10 @@ class BenchmarkRunner:
             
             execution_time = time.time() - start_time
             
-            # Extract tool calls from code executions for evaluation
-            # The evaluator needs execution_results in the format: [{"tool": "...", "parameters": {...}, "result": "...", "success": bool, ...}, ...]
-            execution_results = []
-            for code_exec in code_exec_result.get('code_executions', []):
-                exec_info = code_exec.get('execution', {})
-                if exec_info.get('success'):
-                    # Extract tool calls from the code execution
-                    # For now, we'll create a summary execution result
-                    # The code execution agent doesn't track individual tool calls the same way
-                    # We'll create a synthetic execution result based on the code that was run
-                    execution_results.append({
-                        'tool': 'code_execution',
-                        'parameters': {'code': code_exec.get('code', '')[:200]},  # Truncate code
-                        'result': exec_info.get('output', ''),
-                        'success': True,
-                        'round_num': code_exec.get('turn', 1)
-                    })
+            execution_results = tool_calls_to_execution_results(
+                code_exec_result.get('tool_calls', [])
+            )
+            accumulated_information = build_code_execution_accumulated_information(code_exec_result)
             
             # Format result for evaluator (needs to match traditional agent format)
             formatted_result = {
@@ -1104,7 +1077,7 @@ class BenchmarkRunner:
                 'total_rounds': code_exec_result.get('total_turns', 0),
                 'available_tools': server_manager.all_tools,
                 'planning_json_compliance': 1.0,  # Code execution doesn't use planning JSON
-                'accumulated_information': code_exec_result.get('solution', ''),  # Use solution as accumulated info
+                'accumulated_information': accumulated_information,
                 'total_output_tokens': code_exec_result.get('total_output_tokens', 0),
                 'total_prompt_tokens': code_exec_result.get('total_prompt_tokens', 0),
                 'total_tokens': code_exec_result.get('total_tokens', 0)
@@ -1444,6 +1417,7 @@ class BenchmarkRunner:
             'server_name': server_name,
             'task_description': task_description,
             'concrete_task_description': concrete_task_description,
+            'dependency_analysis': task_data.get('dependency_analysis', ''),
             'task_id': task_id,
             'description_type': description_type,
             'ref_info': ref_info
