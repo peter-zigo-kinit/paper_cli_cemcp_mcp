@@ -1,4 +1,8 @@
-## Agent skills
+## Agent guidance
+
+### Agent skills
+
+Project skills live in `.agents/skills/` (source of truth). For Claude Code, `.claude/skills/<name>` is a relative symlink to `../../.agents/skills/<name>/`; when you add a skill, add its symlink too and never copy files into `.claude/skills/`. Do not create `.cursor/skills/`. `CLAUDE.md` is a symlink to this file.
 
 ### Issue tracker
 
@@ -14,7 +18,7 @@ Single-context: `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agents/do
 
 ### Diagrams (Excalidraw)
 
-For architecture or workflow diagrams as `.excalidraw` files, use the `excalidraw-diagram` skill (from [coleam00/excalidraw-diagram-skill](https://github.com/coleam00/excalidraw-diagram-skill)). Renderer setup: `cd .claude/skills/excalidraw-diagram/references && uv sync && uv run playwright install chromium`.
+For architecture or workflow diagrams as `.excalidraw` files, use the `excalidraw-diagram` skill (from [coleam00/excalidraw-diagram-skill](https://github.com/coleam00/excalidraw-diagram-skill)). Renderer setup: `cd .agents/skills/excalidraw-diagram/references && uv sync && uv run playwright install chromium`.
 
 ### Development setup
 
